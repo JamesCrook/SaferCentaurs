@@ -1,0 +1,604 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #fafafa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header from index.html */
+header {
+    background: white;
+    border-bottom: 1px solid #e1e1e1;
+    padding: 20px 0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+nav a {
+    margin-left: 30px;
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #2c3e50;
+}
+
+/* Footer */
+footer {
+    margin-top: 60px;
+    padding: 30px 0;
+    border-top: 1px solid #e1e1e1;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+
+/* Index Page Specific */
+.main-content {
+    margin-top: 40px;
+}
+
+.top-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    margin-bottom: 50px;
+}
+
+.blog-section {
+    margin-top: 0;
+}
+
+.blog-section h2 {
+    margin-bottom: 30px;
+    font-size: 28px;
+    color: #2c3e50;
+}
+
+.blog-post {
+    background: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+    display: flex;
+    gap: 20px;
+}
+
+.blog-image {
+    flex-shrink: 0;
+    width: 240px;
+    height: 160px;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 14px;
+    text-align: center;
+}
+
+.blog-content {
+    flex: 1;
+}
+
+.blog-post h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.blog-post h3 a {
+    text-decoration: none;
+    color: #2c3e50;
+}
+
+.blog-post h3 a:hover {
+    color: #3498db;
+}
+
+.blog-meta {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.blog-meta .tag {
+    background: #ecf0f1;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.making-of {
+    background: #e8f4f8;
+    color: #2980b9;
+}
+
+.philosophy {
+    background: #fdf2e9;
+    color: #e67e22;
+}
+
+.blog-excerpt {
+    color: #555;
+}
+
+.tools-box {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+    padding: 25px;
+}
+
+.tools-box h3 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.tool-list {
+    list-style: none;
+}
+
+.tool-list li {
+    margin-bottom: 12px;
+}
+
+.tool-list a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: 500;
+}
+
+.tool-list a:hover {
+    color: #2980b9;
+}
+
+.coming-soon {
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.about-box {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+    padding: 25px;
+}
+
+.about-box h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.about-box p {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.discord-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: #2c3e50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.discord-link:hover {
+    background: #34495e;
+}
+
+.discord-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+@media (max-width: 768px) {
+    .top-section {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .blog-post {
+        flex-direction: column;
+    }
+
+    .blog-image {
+        width: 100%;
+        height: 200px;
+    }
+}
+
+/* Discord Page Specific */
+.page-header {
+    text-align: center;
+    margin: 60px 0 40px 0;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.page-header p {
+    color: #666;
+    font-size: 1.2rem;
+}
+
+.content-section {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 30px;
+    border: 1px solid #e1e1e1;
+}
+
+.content-section h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.content-section p {
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.discord-preview {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #6c757d;
+    margin: 30px 0;
+}
+
+.join-section {
+    text-align: center;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    margin: 40px 0;
+}
+
+.join-section h2 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.join-section p {
+    color: #ecf0f1;
+    margin-bottom: 25px;
+}
+
+.discord-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    color: #2c3e50;
+    padding: 15px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+}
+
+.discord-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.community-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.info-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+}
+
+.info-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.info-card p {
+    color: #666;
+    font-size: 14px;
+}
+
+.patreon-info {
+    background: #fff8e1;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    margin: 30px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.patreon-info h3 {
+    color: #e68900;
+    margin-bottom: 10px;
+}
+
+.patreon-info p {
+    color: #8a6914;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .content-section {
+        padding: 25px;
+    }
+
+    .community-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Breadcrumbs Tool Specific */
+.header { /* Note: This is a class, not the header tag */
+    background: white;
+    border-bottom: 1px solid #e1e1e1;
+    padding: 15px 20px;
+    position: relative;
+}
+
+.hamburger {
+    display: inline-block;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.hamburger div {
+    width: 25px;
+    height: 3px;
+    background: #333;
+    margin: 5px 0;
+    transition: 0.3s;
+}
+
+.nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e1e1e1;
+    display: none;
+    z-index: 100;
+}
+
+.nav-menu.active {
+    display: block;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.nav-menu a:hover {
+    background: #f8f9fa;
+}
+
+.nav-menu a:last-child {
+    border-bottom: none;
+}
+
+.tool-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.tool-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.tool-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.tool-interface {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+}
+
+.input-section {
+    margin-bottom: 30px;
+}
+
+.input-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.path-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e1e1;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.path-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.help-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.generate-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.generate-btn:hover {
+    background: #2980b9;
+}
+
+.output-section {
+    margin-top: 30px;
+}
+
+.output-section h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.preview {
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.breadcrumb-item {
+    color: #3498db;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.breadcrumb-item:hover {
+    background: #ecf0f1;
+    color: #2980b9;
+}
+
+.breadcrumb-item:last-child {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.breadcrumb-separator {
+    margin: 0 8px;
+    color: #bdc3c7;
+    font-weight: bold;
+}
+
+.code-output {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    position: relative;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #34495e;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: #4a6741;
+}
+
+.future-features {
+    background: #fff8e1;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    margin-top: 40px;
+    border-radius: 0 8px 8px 0;
+}
+
+.future-features h3 {
+    color: #e68900;
+    margin-bottom: 10px;
+}
+
+.future-features p {
+    color: #8a6914;
+    font-size: 14px;
+}

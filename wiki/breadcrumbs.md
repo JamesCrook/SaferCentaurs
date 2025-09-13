@@ -1,29 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Breadcrumbs Tool - Safer Centaurs</title>
-    <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-    <header class="header">
-        <div class="hamburger" onclick="toggleMenu()">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-        
-        <nav class="nav-menu" id="navMenu">
-            <a href="../index.html">← Back to Blog</a>
-            <a href="./tools.html">All Tools</a>
-            <a href="../blog/breadcrumbs-launch.html">About This Tool</a>
-            <a href="../about">About Safer Centaurs</a>
-            <a href="#discord">Discord Community</a>
-        </nav>
-    </header>
-
-    <div class="container">
+---
+title: Breadcrumbs Tool - Safer Centaurs
+template: tool_template.html
+---
+## Content
+```html
+<div class="container">
  <div class="tool-header">
   <h1>
    Breadcrumbs
@@ -74,8 +55,12 @@
  </div>
 </div>
 
+```
 
-    <script>function toggleMenu() {
+
+## Script
+```javascript
+function toggleMenu() {
             const navMenu = document.getElementById('navMenu');
             navMenu.classList.toggle('active');
         }
@@ -84,7 +69,7 @@
         document.addEventListener('click', function(event) {
             const hamburger = document.querySelector('.hamburger');
             const navMenu = document.getElementById('navMenu');
-            
+
             if (!hamburger.contains(event.target) && !navMenu.contains(event.target)) {
                 navMenu.classList.remove('active');
             }
@@ -95,27 +80,27 @@
             const outputSection = document.getElementById('outputSection');
             const preview = document.getElementById('breadcrumbPreview');
             const codeOutput = document.getElementById('htmlCode');
-            
+
             if (!input) {
                 outputSection.style.display = 'none';
                 return;
             }
-            
+
             const pathParts = input.split(' > ').map(part => part.trim()).filter(part => part);
-            
+
             if (pathParts.length === 0) {
                 outputSection.style.display = 'none';
                 return;
             }
-            
+
             // Generate preview HTML
             let previewHtml = '';
             let codeHtml = '<nav class="breadcrumbs">\n';
-            
+
             pathParts.forEach((part, index) => {
                 const isLast = index === pathParts.length - 1;
                 const separator = index > 0 ? '<span class="breadcrumb-separator">›</span>' : '';
-                
+
                 if (isLast) {
                     previewHtml += `${separator}<span class="breadcrumb-item">${part}</span>`;
                     codeHtml += `  ${separator}<span class="breadcrumb-item">${part}</span>\n`;
@@ -124,9 +109,9 @@
                     codeHtml += `  ${separator}<a href="#" class="breadcrumb-item">${part}</a>\n`;
                 }
             });
-            
+
             codeHtml += '</nav>';
-            
+
             preview.innerHTML = previewHtml;
             codeOutput.textContent = codeHtml;
             outputSection.style.display = 'block';
@@ -135,7 +120,7 @@
         function copyCode() {
             const codeElement = document.getElementById('htmlCode');
             const text = codeElement.textContent;
-            
+
             navigator.clipboard.writeText(text).then(() => {
                 const copyBtn = document.querySelector('.copy-btn');
                 const originalText = copyBtn.textContent;
@@ -150,6 +135,5 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pathInput').value = 'bible > new testament > john';
             generateBreadcrumbs();
-        });</script>
-</body>
-</html>
+        });
+```

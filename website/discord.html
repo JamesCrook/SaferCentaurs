@@ -4,215 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Community - Safer Centaurs</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #fafafa;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        header {
-            background: white;
-            border-bottom: 1px solid #e1e1e1;
-            padding: 20px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            text-decoration: none;
-        }
-        
-        nav a {
-            margin-left: 30px;
-            text-decoration: none;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        nav a:hover {
-            color: #2c3e50;
-        }
-        
-        .page-header {
-            text-align: center;
-            margin: 60px 0 40px 0;
-        }
-        
-        .page-header h1 {
-            font-size: 2.5rem;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .page-header p {
-            color: #666;
-            font-size: 1.2rem;
-        }
-        
-        .content-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            margin-bottom: 30px;
-            border: 1px solid #e1e1e1;
-        }
-        
-        .content-section h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-        
-        .content-section p {
-            color: #555;
-            margin-bottom: 15px;
-        }
-        
-        .discord-preview {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            color: #6c757d;
-            margin: 30px 0;
-        }
-        
-        .join-section {
-            text-align: center;
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            margin: 40px 0;
-        }
-        
-        .join-section h2 {
-            color: white;
-            margin-bottom: 15px;
-        }
-        
-        .join-section p {
-            color: #ecf0f1;
-            margin-bottom: 25px;
-        }
-        
-        .discord-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: white;
-            color: #2c3e50;
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-        
-        .discord-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .discord-icon {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-        
-        .community-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-        
-        .info-card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #e1e1e1;
-        }
-        
-        .info-card h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-        
-        .info-card p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .patreon-info {
-            background: #fff8e1;
-            border-left: 4px solid #ffc107;
-            padding: 20px;
-            margin: 30px 0;
-            border-radius: 0 8px 8px 0;
-        }
-        
-        .patreon-info h3 {
-            color: #e68900;
-            margin-bottom: 10px;
-        }
-        
-        .patreon-info p {
-            color: #8a6914;
-            font-size: 14px;
-        }
-        
-        footer {
-            margin-top: 60px;
-            padding: 30px 0;
-            border-top: 1px solid #e1e1e1;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        @media (max-width: 768px) {
-            .page-header h1 {
-                font-size: 2rem;
-            }
-            
-            .content-section {
-                padding: 25px;
-            }
-            
-            .community-info {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="icon" href="./centaur.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <div class="container">
             <div class="header-content">
-                <a href="/" class="logo">Safer Centaurs</a>
+                <div class="logo">Safer Centaurs</div>
                 <nav>
                     <a href="./index.html">Blog</a>
                     <a href="./tools.html">Tools</a>
@@ -223,67 +22,27 @@
     </header>
 
     <div class="container">
-        <div class="page-header">
-            <h1>Discord Community</h1>
-            <p>Join fellow tool builders exploring AI-human collaboration</p>
-        </div>
-
-        <div class="content-section">
-            <h2>Who This Community Is For</h2>
-            <p>Our Discord is designed for educators, content creators, and developers who are building tools using AI. Think 3Blue1Brown, Wikipedia diagram contributors, educational content creators, and software developers exploring human-AI collaboration patterns.</p>
-            
-            <p>We're particularly interested in connecting with people who:</p>
-            <ul style="margin: 15px 0 0 20px; color: #555;">
-                <li>Create educational content and need better diagram tools</li>
-                <li>Build tools that combine human creativity with AI capabilities</li>
-                <li>Contribute visual content to Wikipedia or other knowledge platforms</li>
-                <li>Develop software with AI assistance while maintaining human control</li>
-            </ul>
-        </div>
-
-        <div class="content-section join-section">
-            <h2>Ready to Join?</h2>
-            <p>Connect with other tool builders and share your AI collaboration experiences</p>
-            
-            <div class="discord-preview">
-                <strong>Discord Invite Link</strong><br>
-                <em>Coming Soon - Server Setup in Progress</em>
-            </div>
-            
-            <!-- <a href="#" class="discord-button">
-                <svg class="discord-icon" viewBox="0 0 24 24">
-                    <path d="M20.222 0c1.406 0 2.54 1.137 2.607 2.475V24l-2.677-2.273-1.47-1.338-1.604-1.398.67 2.205H3.71c-1.402 0-2.54-1.065-2.54-2.476V2.48C1.17 1.142 2.31.003 3.715.003h16.5L20.222 0zm-6.118 5.683h-.03l-.202.2c2.073.6 3.076 1.537 3.076 1.537-1.336-.668-2.54-1.002-3.744-1.137-.87-.135-1.74-.064-2.475 0h-.2c-.47 0-1.47.2-2.81.735-.467.203-.735.336-.735.336s1.002-1.002 3.21-1.537l-.135-.135s-1.672-.064-3.477 1.27c0 0-1.805 3.144-1.805 7.02 0 0 1 1.74 3.743 1.806 0 0 .4-.533.805-1.002-1.54-.4-2.172-1.27-2.172-1.27s.135.066.335.2h.06c.03 0 .044.015.06.03v.006c.016.016.03.03.06.03.33.136.66.27.93.4.466.202 1.065.403 1.8.536.93.135 1.996.2 3.21 0 .6-.135 1.2-.267 1.8-.535.39-.2.87-.4 1.397-.737 0 0-.6.936-2.205 1.338.33.466.795 1 .795 1 2.744-.06 3.81-1.8 3.87-1.726 0-3.87-1.815-7.02-1.815-7.02-1.635-1.214-3.165-1.26-3.435-1.26l.056-.02zm.168 4.413c.703 0 1.270.6 1.270 1.335 0 .74-.57 1.34-1.27 1.34-.7 0-1.27-.6-1.27-1.34.002-.74.573-1.338 1.27-1.335zm-4.64 0c.7 0 1.266.6 1.266 1.335 0 .74-.57 1.34-1.27 1.34-.7 0-1.27-.6-1.27-1.34 0-.74.57-1.335 1.27-1.335z"/>
-                </svg>
-                Join Our Discord
-            </a> -->
-        </div>
-
-        <div class="patreon-info">
-            <h3>Community Access</h3>
-            <p>We use a Patreon-supported model to maintain a focused, high-quality community. This helps us filter for committed contributors while keeping the community sustainable and spam-free.</p>
-        </div>
-
-        <div class="community-info">
-            <div class="info-card">
-                <h3>🔧 Tool Development</h3>
-                <p>Share your AI-assisted tool building experiences, get feedback on works in progress, and collaborate on solving common challenges.</p>
-            </div>
-            
-            <div class="info-card">
-                <h3>💡 Best Practices</h3>
-                <p>Discuss effective patterns for human-AI collaboration, share what works, and learn from each other's approaches.</p>
-            </div>
-            
-            <div class="info-card">
-                <h3>🎨 Creative Applications</h3>
-                <p>Show off diagrams, educational content, and other creative works made with Safer Centaurs tools or similar approaches.</p>
-            </div>
-            
-            <div class="info-card">
-                <h3>📚 Educational Focus</h3>
-                <p>Special emphasis on tools and content that help others learn, whether for Wikipedia, educational videos, or teaching materials.</p>
-            </div>
-        </div>
+        <div class="content-section"><h2>Who This Community Is For</h2><p>Our Discord is designed for educators, content creators, and developers who are building tools using AI. Think 3Blue1Brown, Wikipedia diagram contributors, educational content creators, and software developers exploring human-AI collaboration patterns.</p>
+<p>We're particularly interested in connecting with people who:</p>
+<ul>
+<li>Create educational content and need better diagram tools</li>
+<li>Build tools that combine human creativity with AI capabilities</li>
+<li>Contribute visual content to Wikipedia or other knowledge platforms</li>
+<li>Develop software with AI assistance while maintaining human control</li>
+</ul>
+</div>
+<div class="content-section join-section"><h2>Ready to Join?</h2><p>Connect with other tool builders and share your AI collaboration experiences</p>
+<h3>Preview</h3>
+<p>Discord Invite Link
+Coming Soon - Server Setup in Progress</p>
+</div>
+<div class="patreon-info"><h3>Community Access</h3><p>We use a Patreon-supported model to maintain a focused, high-quality community. This helps us filter for committed contributors while keeping the community sustainable and spam-free.</p>
+</div>
+<div class="community-info"><div class="info-card"><h3>🔧 Tool Development</h3><p>Share your AI-assisted tool building experiences, get feedback on works in progress, and collaborate on solving common challenges.</p>
+</div><div class="info-card"><h3>💡 Best Practices</h3><p>Discuss effective patterns for human-AI collaboration, share what works, and learn from each other's approaches.</p>
+</div><div class="info-card"><h3>🎨 Creative Applications</h3><p>Show off diagrams, educational content, and other creative works made with Safer Centaurs tools or similar approaches.</p>
+</div><div class="info-card"><h3>📚 Educational Focus</h3><p>Special emphasis on tools and content that help others learn, whether for Wikipedia, educational videos, or teaching materials.</p>
+</div></div>
     </div>
 
     <footer>

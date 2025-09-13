@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="hamburger" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <nav class="nav-menu" id="navMenu">
+            <a href="../index.html">← Back to Blog</a>
+            <a href="./tools.html">All Tools</a>
+            <a href="../blog/breadcrumbs-launch.html">About This Tool</a>
+            <a href="../about">About Safer Centaurs</a>
+            <a href="#discord">Discord Community</a>
+        </nav>
+    </header>
+
+    {{content}}
+
+    {{scripts}}
+</body>
+</html>

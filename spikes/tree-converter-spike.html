@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Format Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .examples {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .example-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-section {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .format-options {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .format-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .format-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .format-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .detected {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .output-section {
+            margin-top: 20px;
+        }
+        
+        .output {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            min-height: 200px;
+            white-space: pre;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Tree Format Converter</h1>
+        <p class="subtitle">Convert between ASCII art, Markdown lists, and path formats</p>
+        
+        <div class="examples">
+            <button class="example-btn" onclick="loadExample('exercises')">📋 Example: Exercises</button>
+            <button class="example-btn" onclick="loadExample('teas')">🍵 Example: Teas</button>
+        </div>
+        
+        <div class="input-section">
+            <label for="input">Input:</label>
+            <textarea id="input" placeholder="Paste your tree structure here..."></textarea>
+        </div>
+        
+        <div id="detected" class="detected" style="display: none;"></div>
+        
+        <div class="format-options">
+            <button class="format-btn" onclick="convert('ascii')">ASCII Art Tree</button>
+            <button class="format-btn" onclick="convert('markdown')">Markdown List</button>
+            <button class="format-btn" onclick="convert('paths')">Sorted Paths</button>
+        </div>
+        
+        <div class="output-section">
+            <label for="output">Output:</label>
+            <div id="output" class="output">Results will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            exercises: `Workout Routines
+├── Cardio
+│   ├── Running
+│   ├── Cycling
+│   └── Swimming
+├── Strength
+│   ├── Upper Body
+│   │   ├── Push-ups
+│   │   └── Pull-ups
+│   └── Lower Body
+│       ├── Squats
+│       └── Lunges
+└── Flexibility
+    ├── Yoga
+    └── Stretching`,
+            teas: `Teas
+├── Black Tea
+│   ├── Earl Grey
+│   ├── English Breakfast
+│   └── Darjeeling
+├── Green Tea
+│   ├── Sencha
+│   ├── Matcha
+│   └── Dragon Well
+└── Herbal Tea
+    ├── Chamomile
+    ├── Peppermint
+    └── Rooibos`
+        };
+
+        function loadExample(type) {
+            document.getElementById('input').value = examples[type];
+            document.getElementById('output').textContent = 'Results will appear here...';
+            document.getElementById('detected').style.display = 'none';
+        }
+
+        function detectFormat(text) {
+            text = text.trim();
+            if (!text) return null;
+            
+            if (text.includes('├──') || text.includes('└──') || text.includes('│')) {
+                return 'ascii';
+            }
+            
+            if (/^[\s]*[-*]\s/.test(text) || text.split('\n').some(line => /^[\s]*[-*]\s/.test(line))) {
+                return 'markdown';
+            }
+
+            if (text.includes('/')) {
+                const lines = text.split('\n');
+                if (lines.some(line => line.trim().split('/').length > 1)) {
+                    return 'paths';
+                }
+            }
+            
+            return 'markdown';
+        }
+
+        function parseASCII(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const tree = { name: '', children: [] };
+            const stack = [{ node: tree, indent: -1 }];
+            
+            for (const line of lines) {
+                const match = line.match(/^([\s│]*)[├└]──\s*(.+)$/);
+                if (match) {
+                    const indent = match[1].replace(/[^│]/g, ' ').length;
+                    const name = match[2].trim();
+                    const newNode = { name, children: [] };
+                    
+                    while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+                        stack.pop();
+                    }
+                    
+                    if (stack.length > 0) {
+                        stack[stack.length - 1].node.children.push(newNode);
+                    }
+                    
+                    stack.push({ node: newNode, indent });
+                } else if (line.trim() && stack.length === 1) {
+                    tree.name = line.trim();
+                }
+            }
+            
+            return tree;
+        }
+
+        function parseMarkdown(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const tree = { name: '', children: [] };
+            const stack = [{ node: tree, indent: -1 }];
+            
+            for (const line of lines) {
+                const match = line.match(/^(\s*)[-*]\s+(.+)$/);
+                if (match) {
+                    const indent = match[1].length;
+                    const name = match[2].trim();
+                    const newNode = { name, children: [] };
+                    
+                    while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+                        stack.pop();
+                    }
+                    
+                    if (stack.length > 0) {
+                        stack[stack.length - 1].node.children.push(newNode);
+                    }
+                    
+                    stack.push({ node: newNode, indent });
+                } else if (line.trim() && !line.match(/^\s*[-*]/)) {
+                    tree.name = line.trim();
+                }
+            }
+            
+            return tree;
+        }
+
+        function parsePaths(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const tree = { name: '', children: [] };
+            
+            for (const line of lines) {
+                const parts = line.trim().split('/').filter(p => p);
+                if (parts.length === 0) continue;
+                
+                let current = tree;
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i];
+                    if (i === 0 && !tree.name) {
+                        tree.name = part;
+                    } else {
+                        let child = current.children.find(c => c.name === part);
+                        if (!child) {
+                            child = { name: part, children: [] };
+                            current.children.push(child);
+                        }
+                        current = child;
+                    }
+                }
+            }
+            
+            return tree;
+        }
+
+        function toASCII(node, prefix = '', isLast = true, isRoot = true) {
+            let result = '';
+            
+            if (isRoot) {
+                result += node.name + '\n';
+            } else {
+                result += prefix + (isLast ? '└── ' : '├── ') + node.name + '\n';
+            }
+            
+            const children = node.children || [];
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                const isLastChild = i === children.length - 1;
+                const newPrefix = isRoot ? '' : prefix + (isLast ? '    ' : '│   ');
+                result += toASCII(child, newPrefix, isLastChild, false);
+            }
+            
+            return result;
+        }
+
+        function toMarkdown(node, indent = 0, isRoot = true) {
+            let result = '';
+            
+            if (isRoot) {
+                result += node.name + '\n';
+            } else {
+                result += '  '.repeat(indent) + '- ' + node.name + '\n';
+            }
+            
+            const children = node.children || [];
+            for (const child of children) {
+                result += toMarkdown(child, isRoot ? indent : indent + 1, false);
+            }
+            
+            return result;
+        }
+
+        function toPaths(node, prefix = '') {
+            let result = [];
+            const currentPath = prefix ? prefix + '/' + node.name : node.name;
+            
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    result = result.concat(toPaths(child, currentPath));
+                }
+            } else {
+                result.push(currentPath);
+            }
+            
+            return result;
+        }
+
+        function convert(targetFormat) {
+            const input = document.getElementById('input').value;
+            const detectedDiv = document.getElementById('detected');
+            const output = document.getElementById('output');
+            
+            if (!input.trim()) {
+                output.textContent = 'Please enter some text to convert.';
+                detectedDiv.style.display = 'none';
+                return;
+            }
+            
+            const sourceFormat = detectFormat(input);
+            detectedDiv.textContent = `Detected format: ${sourceFormat === 'ascii' ? 'ASCII Art' : sourceFormat === 'markdown' ? 'Markdown' : 'Paths'}`;
+            detectedDiv.style.display = 'block';
+            
+            let tree;
+            try {
+                if (sourceFormat === 'ascii') {
+                    tree = parseASCII(input);
+                } else if (sourceFormat === 'markdown') {
+                    tree = parseMarkdown(input);
+                } else {
+                    tree = parsePaths(input);
+                }
+                
+                let result;
+                if (targetFormat === 'ascii') {
+                    result = toASCII(tree);
+                } else if (targetFormat === 'markdown') {
+                    result = toMarkdown(tree);
+                } else {
+                    const paths = toPaths(tree);
+                    //paths.sort(); // Optional sorted list of paths
+                    result = paths.join('\n');
+                }
+                
+                output.textContent = result;
+            } catch (e) {
+                output.textContent = 'Error parsing input. Please check your format.';
+            }
+        }
+
+        document.getElementById('input').addEventListener('input', function() {
+            const text = this.value;
+            if (text.trim()) {
+                const format = detectFormat(text);
+                const detectedDiv = document.getElementById('detected');
+                detectedDiv.textContent = `Detected format: ${format === 'ascii' ? 'ASCII Art' : format === 'markdown' ? 'Markdown' : 'Paths'}`;
+                detectedDiv.style.display = 'block';
+            } else {
+                document.getElementById('detected').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

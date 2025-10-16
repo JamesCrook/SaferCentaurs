@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Tag Background Shapes</title>
+    <style>
+    body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tag {
+            position: relative;
+            padding: 12px 24px;
+            margin: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 0; /* We'll use SVG for the shape */
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .tag svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .color-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Dynamic SVG Tag Backgrounds</h1>
+      <div class="demo-section">
+        <h3 style="color: white; margin-bottom: 20px;">Shape Combinations</h3>
+        <span class="tag" data="['round','chevron']" style="background-color: #e74c3c;">
+          Inspire
+        </span>
+        <span class="tag" data="['square','round']" style="background-color: #3498db;">
+          Create
+        </span>
+        <span class="tag" data="['chevron','chevron']" style="background-color: #2ecc71;">
+          Build
+        </span>
+        <span class="tag" data="['round','round']" style="background-color: #f39c12;">
+          Design
+        </span>
+        <span class="tag" data="['square','square']" style="background-color: #9b59b6;">
+          Code
+        </span>
+        <span class="tag" data="['chevron','round']" style="background-color: #1abc9c;">
+          Launch
+        </span>
+      </div>
+      <div class="demo-section">
+        <h3 style="color: white; margin-bottom: 20px;">Color Variations</h3>
+        <div class="color-demo">
+          <span class="tag" data="['round','chevron']" style="background-color: #ff6b6b;">
+            Coral
+          </span>
+          <span class="tag" data="['round','chevron']" style="background-color: #4ecdc4;">
+            Teal
+          </span>
+          <span class="tag" data="['round','chevron']" style="background-color: #45b7d1;">
+            Sky
+          </span>
+          <span class="tag" data="['round','chevron']" style="background-color: #96ceb4;">
+            Mint
+          </span>
+          <span class="tag" data="['round','chevron']" style="background-color: #feca57;">
+            Gold
+          </span>
+          <span class="tag" data="['round','chevron']" style="background-color: #ff9ff3;">
+            Pink
+          </span>
+        </div>
+      </div>
+    </div>
+    <script>
+    function createTagShape(element, leftShape, rightShape) {
+            const width = element.offsetWidth;
+            const height = element.offsetHeight;
+            const chevronSize = height * 0.4; // Chevron indent/protrude size
+            const radius = height / 2; // Radius for round ends
+            
+            // Capture and store the background color before making it transparent
+            let bgColor = element.dataset.capturedBgColor;
+            if (!bgColor) {
+                bgColor = getComputedStyle(element).backgroundColor;
+                element.dataset.capturedBgColor = bgColor;
+            }
+            
+            // Add padding for shapes that indent (round and chevron left ends)
+            // This prevents text encroachment in breadcrumb scenarios
+            let leftPadding = 24; // Default padding
+            let rightPadding = 24; // Default padding
+            
+            if (leftShape === 'round') {
+                leftPadding += radius*1.4; // Radius plus some extra space
+            } else if (leftShape === 'chevron') {
+                //leftPadding = chevronSize *2 + 8; // Chevron size plus some space
+            }
+            
+            if (rightShape === 'round') {
+                rightPadding -= radius *0.3;
+                //rightPadding -= chevronSize; // Extra space for protruding chevron
+            }
+            if (rightShape === 'chevron') {
+                //rightPadding -= chevronSize; // Extra space for protruding chevron
+            }
+            
+            // Apply the calculated padding
+            element.style.paddingLeft = `${leftPadding}px`;
+            element.style.paddingRight = `${rightPadding}px`;
+            
+            // Make the CSS background transparent so SVG shows through
+            element.style.backgroundColor = 'transparent';
+            
+            // Remove any existing SVG
+            const existingSvg = element.querySelector('svg');
+            if (existingSvg) {
+                existingSvg.remove();
+            }
+            
+            // Get updated dimensions after padding change
+            const newWidth = element.offsetWidth;
+            const newHeight = element.offsetHeight;
+            
+            // Create SVG element
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', newWidth);
+            svg.setAttribute('height', newHeight);
+            svg.setAttribute('viewBox', `0 0 ${newWidth} ${newHeight}`);
+            
+            // Create path - we'll build it by going around the perimeter clockwise
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            let pathData = '';
+            
+            // Determine starting point and build path
+            let startX = 0;
+            if (leftShape === 'round') {
+                startX = radius;
+            } else if (leftShape === 'chevron') {
+                startX = chevronSize;
+            }
+            
+            pathData = `M ${startX} 0`; // Start at top
+            
+            // Top edge to right side
+            let rightX = newWidth;
+            if (rightShape === 'round') {
+                rightX = newWidth - radius;
+                pathData += ` L ${rightX} 0`;
+                // Round right end - arc from top to bottom
+                pathData += ` A ${radius} ${radius} 0 0 1 ${rightX} ${newHeight}`;
+            } else if (rightShape === 'chevron') {
+                rightX = newWidth - chevronSize;
+                pathData += ` L ${rightX} 0`;
+                // Chevron right end
+                pathData += ` L ${newWidth} ${newHeight/2}`;
+                pathData += ` L ${rightX} ${newHeight}`;
+            } else { // square
+                pathData += ` L ${newWidth} 0`;
+                pathData += ` L ${newWidth} ${newHeight}`;
+            }
+            
+            // Bottom edge back to left side
+            if (leftShape === 'round') {
+                pathData += ` L ${radius} ${newHeight}`;
+                // Round left end - full semicircle from bottom-center to top-center
+                pathData += ` A ${radius} ${radius} 0 0 0 ${radius} 0`;
+            } else if (leftShape === 'chevron') {
+                pathData += ` L ${chevronSize} ${newHeight}`;
+                // Chevron left end
+                pathData += ` L 0 ${newHeight/2}`;
+                pathData += ` L ${chevronSize} 0`;
+            } else { // square
+                pathData += ` L 0 ${newHeight}`;
+                pathData += ` L 0 0`;
+            }
+            
+            pathData += ' Z'; // Close path
+            
+            path.setAttribute('d', pathData);
+            path.setAttribute('fill', bgColor);
+            
+            svg.appendChild(path);
+            element.appendChild(svg);
+        }
+        
+        function initializeTags() {
+            const tags = document.querySelectorAll('.tag[data]');
+            
+            tags.forEach(tag => {
+                try {
+                    // Parse the data attribute
+                    const shapeData = JSON.parse(tag.getAttribute('data').replace(/'/g, '"'));
+                    const leftShape = shapeData[0] || 'square';
+                    const rightShape = shapeData[1] || 'square';
+                    
+                    createTagShape(tag, leftShape, rightShape);
+                } catch (e) {
+                    console.error('Error parsing tag data:', e);
+                    // Fallback to square shape
+                    createTagShape(tag, 'square', 'square');
+                }
+            });
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeTags);
+        
+        // Reinitialize on window resize to maintain proportions
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(initializeTags, 100);
+        });
+        
+        // Add some interactive feedback
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    tag.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+  </body>
+</html>

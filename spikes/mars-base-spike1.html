@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="../wheel.ico" rel="icon" type="image/x-icon">
+    <link href="./mars-styles.css" rel="stylesheet">
+    <link href="../table.css" rel="stylesheet">
+    <script src="../js/widgets.js"></script>
+    <script src="../js/widgets/concept-card.js"></script>
+    <script src="../js/factories.js"></script>
+    <script src="../js/ui-factories/panel-ui-factory.js"></script>
+    <script src="./mars-base.js"></script>
+    <title>Mars Base Simulator</title>
+    <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container3 { display: flex; flex-wrap: wrap; gap: 20px; }
+    .card3 { border: 1px solid #ccc; border-radius: 5px; padding: 10px; width: 200px; text-align: center; background-color:#1b1b1b;color:#bbb;}
+    button { margin-top: 10px; padding: 5px 10px; }
+    .shortage { color:#ce811a;}
+    .selly { padding:5px;background-color:#252525;color:#0bf;}
+    .selly option { background-color:#252525;color:#0bf;}
+    .made {font-size:10px;color:#7bf;}
+    button {background-color:#252525;color:#0bf;}
+    </style>
+  </head>
+  <body>
+    <h1>Mars Base Simulator</h1>
+    <div id="panel-container">
+    </div>
+    <script>
+    const panelConfig = {
+      title: "Mars Base Resources",
+      layout: 'container3',
+      controls: []
+    };
+
+    Object.keys(marsBase.resources).forEach(key => {
+      panelConfig.controls.push({
+        id: key,
+        type: 'concept-card',
+        layout: `
+    <div class='card3'>
+    <div><strong>\${config.label}</strong>: <span id="res_\${config.id}">0</span></div>
+    <div class='made'>made: <span id="made_\${config.id}">0</span></div>
+    <button onclick="requestOne('\${config.id}')">Make</button>
+    <select class='selly' id="mpl_\${config.id}" onchange="newMpl()">
+      <option value="1">x1</option>
+      <option value="10">x10</option>
+      <option value="100">x100</option>
+      <option value="1000">x1000</option>
+    </select>
+    <div id="status_\${config.id}"></div>
+    </div>
+`,
+        label: key
+      });
+    });
+
+    panelUiFactory("panel-container", panelConfig);
+
+    function newMpl() {
+      Object.entries(marsBase.resources).forEach(([key, value]) => {
+        const sel = document.getElementById("mpl_"+key);
+        marsBase.multipliers[ key ] = 1 * sel.value;
+      });
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      Object.entries(marsBase.resources).forEach(([key, value]) => {
+        document.getElementById(`res_${key}`).innerText = r(value);
+        document.getElementById(`made_${key}`).innerText = r(marsBase.produced[key]) + ' ' + marsBase.units[key];
+        document.getElementById(`status_${key}`).innerHTML = listResources(productionRecipes[key], marsBase.multipliers[key]);
+        const sel = document.getElementById(`mpl_${key}`);
+        if (sel) {
+          sel.value = marsBase.multipliers[key];
+        }
+      });
+    }
+
+    function requestOne(key) {
+      let quantity = marsBase.multipliers[key];
+      executeInstruction({ resource: key, quantity: quantity });
+      updateDisplay();
+    }
+
+    updateDisplay();
+    </script>
+  </body>
+</html>

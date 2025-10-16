@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Morphable Sankey HeatMap Diagram</title>
+    <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    #sankeyCanvas {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .slider-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .slider-container label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="range"] {
+      width: 300px;
+      height: 6px;
+      border-radius: 3px;
+      background: #ddd;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+      border: none;
+    }
+
+    .slider-value {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Morphable Sankey HeatMap Diagram</h1>
+      <canvas height="500" id="sankeyCanvas" width="900">
+      </canvas>
+      <div class="slider-container">
+        <label for="positionSlider">
+          Label Positioning (0 = Vertical, 1 = 45° Slope)
+        </label>
+        <input id="positionSlider" max="1" min="0" step="0.01" type="range" value="0">
+        <div class="slider-value">
+          Position:
+          <span id="sliderValue">0.00</span>
+        </div>
+      </div>
+      <div class="slider-container">
+        <label for="diversionSlider">
+          Ribbon Diversion (0 = Direct, 1 = Via Center Blobs)
+        </label>
+        <input id="diversionSlider" max="1" min="0" step="0.01" type="range" value="1">
+        <div class="slider-value">
+          Diversion:
+          <span id="diversionValue">1.00</span>
+        </div>
+      </div>
+      <div class="slider-container">
+        <label for="gridSizeSlider">Blob Grid Size</label>
+        <input id="gridSizeSlider" max="500" min="50" step="10" type="range" value="500">
+        <div class="slider-value">
+          Grid Size:
+          <span id="gridSizeValue">500</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button onclick="loadSampleData1()">Sample Data 1</button>
+        <button onclick="loadSampleData2()">Sample Data 2</button>
+        <button onclick="loadCustomData()">Custom Data</button>
+      </div>
+    </div>
+    <script>
+    // Simple 2D Vector Library
+    class Vec2 {
+      constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+      }
+
+      static fromAngle(angle) {
+        return new Vec2(Math.cos(angle), Math.sin(angle));
+      }
+
+      add(other) {
+        return new Vec2(this.x + other.x, this.y + other.y);
+      }
+
+      subtract(other) {
+        return new Vec2(this.x - other.x, this.y - other.y);
+      }
+
+      multiply(scalar) {
+        return new Vec2(this.x * scalar, this.y * scalar);
+      }
+
+      dot(other) {
+        return this.x * other.x + this.y * other.y;
+      }
+
+      length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+      }
+
+      normalize() {
+        const len = this.length();
+        return len > 0 ? new Vec2(this.x / len, this.y / len) : new Vec2(0, 0);
+      }
+
+      rotate(angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        return new Vec2(
+          this.x * cos - this.y * sin,
+          this.x * sin + this.y * cos
+        );
+      }
+
+      lerp(other, t) {
+        return new Vec2(
+          this.x + (other.x - this.x) * t,
+          this.y + (other.y - this.y) * t
+        );
+      }
+
+      clone() {
+        return new Vec2(this.x, this.y);
+      }
+    }
+
+    class SankeyDiagram {
+      constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+        this.padding = 80;
+        this.nodeWidth = 20;
+        this.currentData = null;
+        this.currentSourceLabels = null;
+        this.currentTargetLabels = null;
+        this.positionFactor = 0; // 0 = vertical, 1 = 45 degree slope
+        this.diversionFactor = 0; // 0 = direct, 1 = via center blobs
+        this.squareSize = 200;
+        this.centerSquare = new Vec2(this.width / 2, this.height / 2);
+        
+        this.nodeColors = [
+          '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+          '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
+          '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
+        ];
+      }
+
+      // Calculate ribbon width from flow value
+      calculateRibbonWidth(flowValue) {
+        return Math.max(2, flowValue * 2); // Minimum 2px, scale by 2
+      }
+
+      // Calculate blob position in center square for a specific flow
+      calculateBlobPosition(sourceIndex, targetIndex, sourceCount, targetCount) {
+        const squareHalf = this.squareSize / 2;
+        
+        // Map source and target indices to positions within the square
+        const sourceT = sourceCount > 1 ? sourceIndex / (sourceCount - 1) : 0.5;
+        const targetT = targetCount > 1 ? targetIndex / (targetCount - 1) : 0.5;
+        
+        // Position within the rotated square
+        const localX = (sourceT - 0.5) * squareHalf;
+        const localY = (targetT - 0.5) * squareHalf;
+        
+        // Rotate by 45 degrees and translate to center
+        const rotated = new Vec2(localX, localY).rotate(Math.PI / 4);
+        return this.centerSquare.add(rotated);
+      }
+
+      // Calculate label positions based on position factor
+      calculateLabelPositions(labels, isSource) {
+        const positions = [];
+        const labelCount = labels.length;
+
+        let startPos1, startPos2,endPos1,endPos2;
+        const squareHalf = this.squareSize / 2;
+        const c = this.centerSquare;
+        // for nice lines we want to be positioned relative to the last blob,
+        // rather than relative to the bottom corner.
+        const fudge = 50;
+        
+        if (isSource) {
+          startPos1 = new Vec2(this.padding, this.padding);
+          endPos1 = new Vec2(this.padding, this.height - this.padding);
+
+          startPos2 = c.add( new Vec2(-squareHalf -this.padding, 0));
+          endPos2 = c.add( new Vec2(- this.padding -fudge,squareHalf-fudge));
+        } else {
+          startPos1 = new Vec2(this.width-this.padding, this.padding);
+          endPos1 = new Vec2(this.width-this.padding, this.height - this.padding);
+
+          startPos2 = c.add( new Vec2(squareHalf + this.padding, 0));
+          endPos2 = c.add( new Vec2( this.padding+fudge,squareHalf-fudge));
+        }
+        for (let i = 0; i < labelCount; i++) {
+          const t = (labelCount > 1 ? i / (labelCount - 1) : 0);
+
+          // Vertical positioning (factor = 0)
+          const pos1 = startPos1.lerp(endPos1, t);
+          const pos2 = startPos2.lerp(endPos2, t);
+
+          const finalPos = pos1.lerp(pos2, this.positionFactor);
+          positions.push(finalPos);
+        }
+        
+        return positions;
+      }
+
+      // Interpolate between two colors
+      interpolateColor(color1, color2, factor) {
+        const c1 = this.hexToRgb(color1);
+        const c2 = this.hexToRgb(color2);
+        
+        const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+        const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+        const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+        
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2}).*$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
+      }
+
+      // Create gradient for ribbon
+      createGradient(pos1, pos2, color1, color2) {
+        const gradient = this.ctx.createLinearGradient(pos1.x, pos1.y, pos2.x, pos2.y);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        return gradient;
+      }
+
+      // Draw tilted square in center
+      drawCenterSquare() {
+        const squareHalf = this.squareSize / 2;
+        this.ctx.strokeStyle = '#ccc';
+        this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 0.5;
+        
+        this.ctx.beginPath();
+        // Draw diamond (45-degree rotated square)
+        this.ctx.moveTo(this.centerSquare.x, this.centerSquare.y - squareHalf);
+        this.ctx.lineTo(this.centerSquare.x + squareHalf, this.centerSquare.y);
+        this.ctx.lineTo(this.centerSquare.x, this.centerSquare.y + squareHalf);
+        this.ctx.lineTo(this.centerSquare.x - squareHalf, this.centerSquare.y);
+        this.ctx.closePath();
+        this.ctx.stroke();
+        
+        this.ctx.globalAlpha = 1.0;
+      }
+
+      // Draw circular blob at given position
+      drawBlob(position, radius, color) {
+        this.ctx.fillStyle = color;
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.beginPath();
+        this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
+        this.ctx.fill();
+        this.ctx.globalAlpha = 1.0;
+      }
+
+      // Draw a curved ribbon, optionally via a center blob
+      drawRibbon(pos1, height1, pos2, height2, color1, color2, blobPos = null) {
+        const gradient = this.createGradient(pos1, pos2, color1, color2);
+        this.ctx.fillStyle = gradient;
+        this.ctx.globalAlpha = 0.7;
+        
+        this.ctx.beginPath();
+        
+        if (blobPos && this.diversionFactor > 0) {
+          // Calculate waypoint: interpolate from midpoint to blob position
+          const midpoint = pos1.lerp(pos2, 0.5);
+          const waypoint = midpoint.lerp(blobPos, this.diversionFactor);
+
+          // Adjust waypoint so ribbon center (not top edge) goes through blob center
+          const adjustedWaypoint = waypoint.add(new Vec2(0, -height1 / 2));
+
+          // Control points for smooth curves through waypoint
+          const controlDistance1 = Math.abs(adjustedWaypoint.x - pos1.x) * 0.5;
+          const controlDistance2 = Math.abs(pos2.x - adjustedWaypoint.x) * 0.5;
+
+          const cp1 = pos1.add(new Vec2(controlDistance1, 0));
+          const cp2 = adjustedWaypoint.add(new Vec2(-controlDistance1, 0));
+          const cp3 = adjustedWaypoint.add(new Vec2(controlDistance2, 0));
+          const cp4 = pos2.add(new Vec2(-controlDistance2, 0));
+
+          // Top curve via waypoint
+          this.ctx.moveTo(pos1.x, pos1.y);
+          this.ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, adjustedWaypoint.x, adjustedWaypoint.y);
+          this.ctx.bezierCurveTo(cp3.x, cp3.y, cp4.x, cp4.y, pos2.x, pos2.y);
+
+          // Right edge
+          this.ctx.lineTo(pos2.x, pos2.y + height2);
+
+          // Bottom curve via waypoint
+          this.ctx.bezierCurveTo(cp4.x, cp4.y + height2, cp3.x, cp3.y + height1, adjustedWaypoint.x, adjustedWaypoint.y + height1);
+          this.ctx.bezierCurveTo(cp2.x, cp2.y + height1, cp1.x, cp1.y + height1, pos1.x, pos1.y + height1);
+
+          // Left edge
+          this.ctx.closePath();
+        } else {
+          // Direct path (original behavior)
+          const controlDistance = Math.abs(pos2.x - pos1.x) * 0.5;
+          const cp1 = pos1.add(new Vec2(controlDistance, 0));
+          const cp2 = pos2.add(new Vec2(-controlDistance, 0));
+
+          // Top curve
+          this.ctx.moveTo(pos1.x, pos1.y);
+          this.ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pos2.x, pos2.y);
+          // Right edge
+          this.ctx.lineTo(pos2.x, pos2.y + height2);
+          // Bottom curve
+          this.ctx.bezierCurveTo(cp2.x, cp2.y + height2, cp1.x, cp1.y + height1, pos1.x, pos1.y + height1);
+          // Left edge
+          this.ctx.closePath();
+        }
+        
+        this.ctx.fill();
+        this.ctx.globalAlpha = 1.0;
+      }
+
+      // Draw a node (rectangle with label)
+      drawNode(position, width, height, color, label) {
+        const pos = new Vec2(position.x - width/2, position.y - height/2);
+        
+        // Draw rectangle
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(pos.x, pos.y, width, height);
+        
+        // Draw label
+        this.ctx.fillStyle = '#333';
+        this.ctx.font = '12px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(label, position.x, position.y + 4);
+      }
+
+      // Update position factor and redraw
+      setPositionFactor(factor) {
+        this.positionFactor = Math.max(0, Math.min(1, factor));
+        if (this.currentData) {
+          this.draw(this.currentData, this.currentSourceLabels, this.currentTargetLabels);
+        }
+      }
+
+      // Update diversion factor and redraw
+      setDiversionFactor(factor) {
+        this.diversionFactor = Math.max(0, Math.min(1, factor));
+        if (this.currentData) {
+          this.draw(this.currentData, this.currentSourceLabels, this.currentTargetLabels);
+        }
+      }
+
+      // Update grid size and redraw
+      setGridSize(size) {
+        this.squareSize = size;
+        if (this.currentData) {
+          this.draw(this.currentData, this.currentSourceLabels, this.currentTargetLabels);
+        }
+      }
+
+      // Process data and calculate node positions
+      processData(data, sourceLabels, targetLabels) {
+        const sourcePositions = this.calculateLabelPositions(sourceLabels, true);
+        const targetPositions = this.calculateLabelPositions(targetLabels, false);
+        
+        const nodes = {};
+        
+        // Calculate source nodes
+        sourceLabels.forEach((label, i) => {
+          const totalFlow = data[i].reduce((sum, val) => sum + val, 0);
+          const nodeHeight = Math.max(20, totalFlow * 2);
+
+          nodes[`source_${i}`] = {
+            position: sourcePositions[i],
+            width: this.nodeWidth,
+            height: nodeHeight,
+            color: this.nodeColors[i % this.nodeColors.length],
+            label: label,
+            totalFlow: totalFlow
+          };
+        });
+        
+        // Calculate target nodes
+        targetLabels.forEach((label, j) => {
+          const totalFlow = data.reduce((sum, row) => sum + row[j], 0);
+          const nodeHeight = Math.max(20, totalFlow * 2);
+
+          nodes[`target_${j}`] = {
+            position: targetPositions[j],
+            width: this.nodeWidth,
+            height: nodeHeight,
+            color: this.nodeColors[(sourceLabels.length + j) % this.nodeColors.length],
+            label: label,
+            totalFlow: totalFlow
+          };
+        });
+        
+        return nodes;
+      }
+
+      // Draw the complete Sankey diagram
+      draw(data, sourceLabels, targetLabels) {
+        // Store current data for position updates
+        this.currentData = data;
+        this.currentSourceLabels = sourceLabels;
+        this.currentTargetLabels = targetLabels;
+        let drawBlobs = this.squareSize > 200;
+
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // Draw center square first
+        if( drawBlobs)
+          this.drawCenterSquare();
+
+        const nodes = this.processData(data, sourceLabels, targetLabels);
+
+        // Collect all blobs to draw
+        const blobs = [];
+
+        // Draw ribbons first (so they appear behind nodes)
+        let sourceOffsets = {};
+        let targetOffsets = {};
+
+        // Initialize offsets
+        sourceLabels.forEach((_, i) => {
+          sourceOffsets[i] = 0;
+        });
+        targetLabels.forEach((_, j) => {
+          targetOffsets[j] = 0;
+        });
+
+        // Draw ribbons and collect blob data
+        data.forEach((row, i) => {
+          row.forEach((value, j) => {
+            if (value > 0) {
+              const sourceNode = nodes[`source_${i}`];
+              const targetNode = nodes[`target_${j}`];
+
+              const ribbonHeight = this.calculateRibbonWidth(value);
+
+              const sourcePos = new Vec2(
+                sourceNode.position.x + sourceNode.width/2,
+                sourceNode.position.y - sourceNode.height/2 + sourceOffsets[i]
+              );
+
+              const targetPos = new Vec2(
+                targetNode.position.x - targetNode.width/2,
+                targetNode.position.y - targetNode.height/2 + targetOffsets[j]
+              );
+
+              // Calculate blob position and add to collection
+              const blobPos = this.calculateBlobPosition(i, j, sourceLabels.length, targetLabels.length);
+              const blobRadius = ribbonHeight / 2 + 2;
+              const blobColor = this.interpolateColor(sourceNode.color, targetNode.color, 0.5);
+
+              blobs.push({ position: blobPos, radius: blobRadius, color: blobColor });
+
+              this.drawRibbon(
+                sourcePos, ribbonHeight,
+                targetPos, ribbonHeight,
+                sourceNode.color, targetNode.color,
+                blobPos
+              );
+
+              sourceOffsets[i] += ribbonHeight;
+              targetOffsets[j] += ribbonHeight;
+            }
+          });
+        });
+
+        // Draw blobs on top of ribbons but below nodes
+        if (drawBlobs && this.diversionFactor > 0) {
+          blobs.forEach(blob => {
+            this.drawBlob(blob.position, blob.radius, blob.color);
+          });
+        }
+
+        // Draw nodes on top
+        Object.values(nodes).forEach(node => {
+          this.drawNode(node.position, node.width, node.height, node.color, node.label);
+        });
+
+        // Draw axis lines when in slope mode
+        if (this.positionFactor > 0.1) {
+          this.drawAxisLines(sourceLabels, targetLabels);
+        }
+      }
+
+      // Draw axis lines to show the coordinate system
+      drawAxisLines(sourceLabels, targetLabels) {
+        const alpha = Math.min( 0.4, this.positionFactor );
+        this.ctx.globalAlpha = alpha;
+        this.ctx.strokeStyle = '#666';
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash([5, 5]);
+
+        const sourcePositions = this.calculateLabelPositions(sourceLabels, true);
+        const targetPositions = this.calculateLabelPositions(targetLabels, false);
+
+        // Draw source axis line
+        if (sourcePositions.length > 1) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(sourcePositions[0].x, sourcePositions[0].y);
+          this.ctx.lineTo(sourcePositions[sourcePositions.length - 1].x, sourcePositions[sourcePositions.length - 1].y);
+          this.ctx.stroke();
+        }
+
+        // Draw target axis line
+        if (targetPositions.length > 1) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(targetPositions[0].x, targetPositions[0].y);
+          this.ctx.lineTo(targetPositions[targetPositions.length - 1].x, targetPositions[targetPositions.length - 1].y);
+          this.ctx.stroke();
+        }
+
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.setLineDash([]);
+      }
+    }
+
+    // Initialize the diagram
+    const sankey = new SankeyDiagram('sankeyCanvas');
+
+    // Slider event handlers
+    const slider = document.getElementById('positionSlider');
+    const sliderValue = document.getElementById('sliderValue');
+    const diversionSlider = document.getElementById('diversionSlider');
+    const diversionValue = document.getElementById('diversionValue');
+    const gridSizeSlider = document.getElementById('gridSizeSlider');
+    const gridSizeValue = document.getElementById('gridSizeValue');
+
+    slider.addEventListener('input', function() {
+      const value = parseFloat(this.value);
+      sliderValue.textContent = value.toFixed(2);
+      sankey.setPositionFactor(value);
+    });
+
+    diversionSlider.addEventListener('input', function() {
+      const value = parseFloat(this.value);
+      diversionValue.textContent = value.toFixed(2);
+      sankey.setDiversionFactor(value);
+    });
+
+    gridSizeSlider.addEventListener('input', function() {
+      const value = parseInt(this.value);
+      gridSizeValue.textContent = value;
+      sankey.setGridSize(value);
+    });
+
+    // Sample data functions
+    function loadSampleData1() {
+      const data = [
+        [10, 5, 3],
+        [8, 12, 2],
+        [4, 8, 15],
+        [6, 3, 9]
+      ];
+      const sourceLabels = ['Energy', 'Manufacturing', 'Transport', 'Buildings'];
+      const targetLabels = ['Electricity', 'Heat', 'Industry'];
+
+      sankey.draw(data, sourceLabels, targetLabels);
+    }
+
+    function loadSampleData2() {
+      const data = [
+        [20, 10, 0, 5],
+        [15, 8, 12, 3],
+        [5, 15, 20, 8]
+      ];
+      const sourceLabels = ['Renewable', 'Fossil', 'Nuclear'];
+      const targetLabels = ['Residential', 'Commercial', 'Industrial', 'Transport'];
+
+      sankey.draw(data, sourceLabels, targetLabels);
+    }
+
+    function loadCustomData() {
+      const customData = prompt(
+        "Enter your data as JSON array (e.g., [[10,5,3],[8,12,2]]):\n" +
+        "Each inner array represents flows from one source to all targets."
+      );
+
+      if (customData) {
+        try {
+          const data = JSON.parse(customData);
+          const sourceLabels = data.map((_, i) => `Source ${i + 1}`);
+          const targetLabels = data[0].map((_, j) => `Target ${j + 1}`);
+
+          sankey.draw(data, sourceLabels, targetLabels);
+        } catch (e) {
+          alert("Invalid JSON format. Please try again.");
+        }
+      }
+    }
+    sankey.setPositionFactor(0.0);
+    sankey.setDiversionFactor(1.0);
+    sankey.setGridSize(500);
+    // Load initial sample data
+    loadSampleData1();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Frame demo</title>
+    <script src="../js/utilities/vector2d.js"></script>
+    <script src="../js/utilities/line-geometry.js"></script>
+    <script src="../js/data-manager.js"></script>
+    <script src="../js/path-ast.js"></script>
+    <script src="../js/ui-manager.js"></script>
+    <script src="../js/end-shapes/simple-end-shapes.js"></script>
+    <script src="../js/renderers.js"></script>
+    <script src="../js/renderers/ribbon.js"></script>
+    <script src="../js/renderers/grid-renderers.js"></script>
+    <script src="../js/renderers/graph-renderers.js"></script>
+    <script src="../js/renderers/network-renderers.js"></script>
+    <script src="../js/renderers/ribbon-renderers.js"></script>
+    <script src="../js/factories.js"></script>
+    <script src="../js/ui-factories/canvas-factory.js"></script>
+    <script src="../js/ui-factories/canvas-ui-factory.js"></script>
+    <script src="./frames-world.js"></script>
+    <link href="./wheel.ico" rel="icon" type="image/x-icon">
+    <style></style>
+  </head>
+  <body>
+    <div id="all-panels">
+    </div>
+    <script>
+    const choiceConfig = {
+      id: 'world.choice',
+      controls:    [
+        { id: "frames",   type: "button", label: "Frames",      contents: ['canvas', framesWorld]},
+      ],
+    }
+
+    // Initialize the control panels on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      Registry.set( 'worlds', choiceConfig );
+      AppUi.setItem( 'frames' );
+    });
+    </script>
+  </body>
+</html>

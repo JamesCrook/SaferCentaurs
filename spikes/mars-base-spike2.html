@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="../wheel.ico" rel="icon" type="image/x-icon">
+    <link href="./mars-styles.css" rel="stylesheet">
+    <script data-cfasync="false" src="./mars-base.js"></script>
+    <script data-cfasync="false" src="../js/widgets/draggable-manager.js"></script>
+    <title>Mars Base Simulator with Kanban Cards</title>
+    <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+        .container3 { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card3 { border: 1px solid #ccc; border-radius: 5px; padding: 10px; width: 200px; text-align: center; background-color:#1b1b1b;color:#bbb; cursor: grab;}
+        .card3:active { cursor: grabbing; }
+        .column { width: 300px; min-height: 200px; border: 1px solid #444; border-radius: 5px; padding: 10px; margin: 10px;}
+        #col1 { background-color: #2a2a2a; }
+        #col2 { background-color: #2a2a2a; }
+        #col3 { background-color: #2a2a2a; }
+        .card3.dragging { opacity: 0.5; }
+        .column.drag-over { border: 2px dashed #0bf; }
+        .shortage { color:#ce811a;}
+        .selly { padding:5px;background-color:#252525;color:#0bf;}
+        .selly option { background-color:#252525;color:#0bf;}
+        .made {font-size:10px;color:#7bf;}
+        button {background-color:#252525;color:#0bf;}
+    </style>
+  </head>
+  <body>
+    <h1>Mars Base Simulator</h1>
+    <div class="container3">
+      <div class="column" id="col1" style="min-width:280px">
+        <h2>To Do</h2>
+      </div>
+      <div class="column" id="col2" style="min-width:280px">
+        <h2>In Progress</h2>
+      </div>
+      <div class="column" id="col3">
+        <h2>Done</h2>
+      </div>
+    </div>
+    <div class="container3" id="resources">
+    </div>
+    <script>
+    isSetting = false;
+  function newMpl() {
+    if( isSetting )
+      return;
+    Object.entries(marsBase.resources).forEach(([key, value]) => {
+      const sel = document.getElementById("mpl_"+key);
+      marsBase.multipliers[ key ] = 1 * sel.value;
+    });
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    if( isSetting )
+      return;
+    isSetting = true;
+
+    const resourceContainer = document.getElementById("resources");
+    resourceContainer.innerHTML = "";
+
+    const createCard = (key, value, container) => {
+      let status = listResources( productionRecipes[key], marsBase.multipliers[key] )
+      let made = r(marsBase.produced[key]) +' '+marsBase.units[key];
+      const card = document.createElement("div");
+      card.className = "card3";
+      card.draggable = true;
+      card.id = `card-${key}`;
+      card.innerHTML = `
+      <div><strong>${key}</strong>: ${r(value)}</div>
+      <div class='made'>made: ${made}</div>
+      <button onclick="requestOne('${key}')">Make</button>
+      <select class='selly' id="mpl_${key}" onchange=newMpl()>
+      <option value="1">x1</option>
+      <option value="10">x10</option>
+      <option value="100">x100</option>
+      <option value="1000">x1000</option>
+      </select>
+      ${status}
+      `;
+      container.appendChild(card);
+    };
+
+    const setCard = ( key ) => {
+      const sel = document.getElementById("mpl_"+key);
+      sel.value = marsBase.multipliers[ key ];
+    };
+
+    Object.entries(cardState.columns).forEach(([columnId, cardKeys]) => {
+      const column = document.getElementById(columnId);
+      column.innerHTML = `<h2>${column.querySelector('h2').innerText}</h2>`;
+      cardKeys.forEach(key => {
+        const value = marsBase.resources[key];
+        createCard(key, value, column);
+      });
+    });
+
+    Object.values(cardState.columns).flat().forEach(key => setCard(key));
+    isSetting= false;
+  }
+
+  function requestOne(key) {
+    let quantity = marsBase.multipliers[key]
+    executeInstruction({ resource: key, quantity: quantity });
+    updateDisplayAndDraggables();
+  }
+
+  const cardState = {
+    columns: {
+      'col1': [],
+      'col2': [],
+      'col3': []
+    }
+  };
+
+  let draggableManager;
+  function initDraggableManager() {
+    const columns = document.querySelectorAll('.column');
+    draggableManager = new DraggableManager(Array.from(columns), cardState, updateDisplayAndDraggables, 'button, select');
+  }
+  initDraggableManager();
+
+  function updateDisplayAndDraggables() {
+    updateDisplay();
+    const draggables = document.querySelectorAll('.card3');
+    draggableManager.updateDraggables(Array.from(draggables));
+  }
+
+  Object.keys(marsBase.resources).forEach(key => {
+    cardState.columns['col1'].push(key);
+  });
+  updateDisplayAndDraggables();
+    </script>
+  </body>
+</html>

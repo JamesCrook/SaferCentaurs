@@ -179,7 +179,7 @@ const canvasUiFactory = function(name) {
    * @param {WheelEvent} e - The wheel event.
    */
   function handleWheel(e) {
-    if (!e.ctrlKey && !e.metaKey) 
+    if(!e.ctrlKey && !e.metaKey)
       return; // Exit early if Ctrl isn't pressed
 
     e.preventDefault();

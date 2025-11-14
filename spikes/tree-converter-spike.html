@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tree Format Converter</title>
     <style>
-        * {
+    * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -148,38 +148,46 @@
             font-size: 14px;
         }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🌳 Tree Format Converter</h1>
-        <p class="subtitle">Convert between ASCII art, Markdown lists, and path formats</p>
-        
-        <div class="examples">
-            <button class="example-btn" onclick="loadExample('exercises')">📋 Example: Exercises</button>
-            <button class="example-btn" onclick="loadExample('teas')">🍵 Example: Teas</button>
-        </div>
-        
-        <div class="input-section">
-            <label for="input">Input:</label>
-            <textarea id="input" placeholder="Paste your tree structure here..."></textarea>
-        </div>
-        
-        <div id="detected" class="detected" style="display: none;"></div>
-        
-        <div class="format-options">
-            <button class="format-btn" onclick="convert('ascii')">ASCII Art Tree</button>
-            <button class="format-btn" onclick="convert('markdown')">Markdown List</button>
-            <button class="format-btn" onclick="convert('paths')">Sorted Paths</button>
-        </div>
-        
-        <div class="output-section">
-            <label for="output">Output:</label>
-            <div id="output" class="output">Results will appear here...</div>
-        </div>
+      <h1>🌳 Tree Format Converter</h1>
+      <p class="subtitle">
+        Convert between ASCII art, Markdown lists, and path formats
+      </p>
+      <div class="examples">
+        <button class="example-btn" onclick="loadExample('exercises')">
+          📋 Example: Exercises
+        </button>
+        <button class="example-btn" onclick="loadExample('teas')">
+          🍵 Example: Teas
+        </button>
+      </div>
+      <div class="input-section">
+        <label for="input">Input:</label>
+        <textarea id="input" placeholder="Paste your tree structure here...">
+        </textarea>
+      </div>
+      <div id="detected" class="detected" style="display: none;">
+      </div>
+      <div class="format-options">
+        <button class="format-btn" onclick="convert('ascii')">
+          ASCII Art Tree
+        </button>
+        <button class="format-btn" onclick="convert('markdown')">
+          Markdown List
+        </button>
+        <button class="format-btn" onclick="convert('paths')">
+          Sorted Paths
+        </button>
+      </div>
+      <div class="output-section">
+        <label for="output">Output:</label>
+        <div id="output" class="output">Results will appear here...</div>
+      </div>
     </div>
-
     <script>
-        const examples = {
+    const examples = {
             exercises: `Workout Routines
 ├── Cardio
 │   ├── Running
@@ -429,5 +437,5 @@
             }
         });
     </script>
-</body>
+  </body>
 </html>

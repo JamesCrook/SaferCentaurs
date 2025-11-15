@@ -4,6 +4,10 @@ This repo contains code developed at [Safer Centaurs](https://www.safercentaurs.
 
 I believe AI amplifies human capability - for better or worse. By rapidly building and openly sharing powerful tools, we help ensure positive applications emerge first and shape how this technology develops.
 
+This works in two ways:
+* In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools. There is little point having access to AI tools without also having skills in using them effectively.
+* The actual code produced in the course of the blog posts is ultimately for communicating using diagrams. Visual metaphors work well for organising information. The diagram tools help us to work better with more information.
+
 ## Repository Structure
 ```
 ├── js/              # Core graphics library - unified approach to diagrams, graphs, infographics
@@ -18,7 +22,7 @@ I believe AI amplifies human capability - for better or worse. By rapidly buildi
 
 ## Architecture
 
-AI-assisted development naturally pushes toward clean separation of concerns - the AI works best when it can focus on specific, well-defined modules. This has led to a highly pluggable architecture where renderers, parsers, and widgets incrementally add capabilities.
+AI-assisted development naturally pushes toward clean separation of concerns - the AI works best on developing the code when it can focus on specific, well-defined modules. This has led to a highly pluggable architecture where renderers, parsers, and widgets incrementally add capabilities.
 
 ## Quick Start
 

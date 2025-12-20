@@ -2,10 +2,10 @@
 
 This repo contains code developed at [Safer Centaurs](https://www.safercentaurs.com), where I blog about the AI-assisted development process.
 
-I believe AI amplifies human capability - for better or worse. By rapidly building and openly sharing powerful tools, we help ensure positive applications emerge first and shape how this technology develops.
+AI amplifies human capability - for better or worse. In Safer Centaurs I'm aiming to help democratise the good uses of AI, aiming for good outcomes.
 
 This works in two ways:
-* In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools. There is little point having access to AI tools without also having skills in using them effectively.
+* In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools. There is little point having access to AI tools without also having the know-how to use them effectively.
 * The actual code produced in the course of the blog posts is ultimately for communicating using diagrams. Visual metaphors work well for organising information. The diagram tools help us to work better with more information.
 
 ## Repository Structure

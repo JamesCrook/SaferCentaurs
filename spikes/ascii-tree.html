@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Folder to ASCII Tree</title>
-  <style>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder to ASCII Tree</title>
+    <style>
     * {
       box-sizing: border-box;
       margin: 0;
@@ -271,58 +271,61 @@
       font-size: 0.95rem;
       color: #a1a1aa;
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>📁 Folder → ASCII Tree</h1>
-    <p class="subtitle">Drag & drop a folder to generate a copyable directory tree</p>
-
-    <div class="options">
-      <label class="toggle">
-        <input type="checkbox" id="skipFiles" checked>
-        <span class="toggle-slider"></span>
-        <span class="toggle-label">Skip .DS_Store and .git</span>
-      </label>
-      <label class="toggle">
-        <input type="checkbox" id="addComments">
-        <span class="toggle-slider"></span>
-        <span class="toggle-label">Add # for comments</span>
-      </label>
-    </div>
-
-    <div class="drop-zone" id="dropZone">
-      <div class="drop-zone-icon">🗂️</div>
-      <div class="drop-zone-text">Drop a folder here</div>
-      <div class="drop-zone-hint">or click to browse</div>
-      <input type="file" class="hidden-input" id="folderInput" webkitdirectory multiple>
-    </div>
-
-    <div class="output-section" id="outputSection">
-      <div class="output-header">
-        <div>
-          <span class="output-title" id="folderName">project/</span>
-          <span class="output-stats" id="stats"></span>
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📁 Folder → ASCII Tree</h1>
+      <p class="subtitle">
+        Drag & drop a folder to generate a copyable directory tree
+      </p>
+      <div class="options">
+        <label class="toggle">
+          <input type="checkbox" id="skipFiles" checked="">
+          <span class="toggle-slider">
+          </span>
+          <span class="toggle-label">Skip .DS_Store and .git</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="addComments">
+          <span class="toggle-slider">
+          </span>
+          <span class="toggle-label">Add # for comments</span>
+        </label>
+      </div>
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-icon">🗂️</div>
+        <div class="drop-zone-text">Drop a folder here</div>
+        <div class="drop-zone-hint">or click to browse</div>
+        <input type="file" class="hidden-input" id="folderInput" webkitdirectory="" multiple="">
+      </div>
+      <div class="output-section" id="outputSection">
+        <div class="output-header">
+          <div>
+            <span class="output-title" id="folderName">project/</span>
+            <span class="output-stats" id="stats">
+            </span>
+          </div>
+          <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
+            <span id="copyIcon">📋</span>
+            <span id="copyText">Copy to Clipboard</span>
+          </button>
         </div>
-        <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
-          <span id="copyIcon">📋</span>
-          <span id="copyText">Copy to Clipboard</span>
-        </button>
-      </div>
-      <textarea class="output-area" id="outputArea" readonly></textarea>
-      <div class="actions">
-        <button class="secondary-btn" onclick="clearOutput()">Clear</button>
-        <button class="secondary-btn" onclick="downloadTxt()">Download .txt</button>
+        <textarea class="output-area" id="outputArea" readonly="">
+        </textarea>
+        <div class="actions">
+          <button class="secondary-btn" onclick="clearOutput()">Clear</button>
+          <button class="secondary-btn" onclick="downloadTxt()">
+            Download .txt
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="toast" id="toast">
-    <span class="toast-icon">✓</span>
-    <span id="toastMessage">Copied to clipboard!</span>
-  </div>
-
-  <script>
+    <div class="toast" id="toast">
+      <span class="toast-icon">✓</span>
+      <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+    <script>
     const dropZone = document.getElementById('dropZone');
     const folderInput = document.getElementById('folderInput');
     const outputSection = document.getElementById('outputSection');
@@ -571,6 +574,6 @@
       URL.revokeObjectURL(url);
       showToast('Downloaded!');
     }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

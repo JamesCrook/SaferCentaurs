@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STA Redesign: Curve Engine</title>
+    <link rel="icon" type="image/x-icon" href="../wheel.ico">
+    <style>
+        :root {
+            --bg: #000000;
+            --panel: #1a1a24;
+            --text: #9999ff;
+            --accent: #ff9900;
+            --btn-std: #cc6666;
+            --btn-std-hover: #e68080;
+            --btn-act: #99ccff;
+            --font-ui: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-ui);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            gap: 20px;
+        }
+
+        /* Visualization */
+        canvas {
+            width: 100%;
+            height: 150px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(153, 153, 255, 0.1);
+        }
+
+        /* Controls */
+        .panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1.1em;
+            border-radius: 4px;
+        }
+
+        button.play-btn {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 0 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        button.play-btn:hover { background: #ffaa33; }
+
+        /* Preset Grids */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            background: var(--btn-std);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.9em;
+            transition: transform 0.1s;
+        }
+        .preset-btn:hover {
+            background: var(--btn-std-hover);
+            transform: translateY(-2px);
+        }
+        .preset-btn span {
+            display: block;
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .helper-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+
+        /* Syntax Highlight Colors */
+        .syntax-key { color: #ff9900; }
+        .syntax-val { color: #99ccff; }
+    </style>
+</head>
+<body>
+<div onclick="window.history.back()" style="position: fixed; top: 20px; left: 20px; cursor: pointer; z-index: 1000; background: rgba(70,60,190,0.3); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: background 0.3s;" onmouseover="this.style.background='rgba(70,60,190,0.9)'" onmouseout="this.style.background='rgba(70,60,190,0.3)'">
+  ←
+</div>
+    <h1>STA Engine Redesign</h1>
+
+    <div class="container">
+        <!-- Visualizer -->
+        <canvas id="scope" width="900" height="150"></canvas>
+
+        <!-- Main Editor -->
+        <div class="panel">
+            <div class="input-group">
+                <input type="text" id="staInput" value="PLAY Sine DUR 1.5 FREQ 220 880 VOL 0 1 0" placeholder="Enter STA Command...">
+                <button class="play-btn" id="mainPlayBtn">ENGAGE</button>
+            </div>
+            <div class="helper-text" id="statusText">Ready.</div>
+        </div>
+
+        <!-- Section: Sequences (UI Sounds) -->
+        <div class="panel">
+            <h3 style="margin-top:0">Discrete Sequences (UI)</h3>
+            <p style="font-size:0.9em; color:#888;">Using <code>COUNT</code> and <code>GAP</code> to distribute events.</p>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Sine COUNT 2 GAP 0.05 DUR 0.1 FREQ 1200 800')">
+                    TNG Confirm
+                    <span>Two tones, distinct envelopes</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Sine VOL 0.5 COUNT 4 GAP -0.04 DUR 0.1 FREQ 1200 600')">
+                    Cascade/Arp
+                    <span>Negative GAP = Overlap</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Saw COUNT 3 GAP 0.1 DUR 0.05 FREQ 800 VOL 0.2 1.0')">
+                    Alert Ramp
+                    <span>Volume increases over sequence</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Sine DUR 0.05 FREQ 1500')">
+                    Simple Blip
+                    <span>One shot high chirp</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Section: Continuous (Drones/FX) -->
+        <div class="panel">
+            <h3 style="margin-top:0">Continuous Textures</h3>
+            <p style="font-size:0.9em; color:#888;">Using automation curves on a single voice.</p>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Sine DUR 1.0 FREQ 400 800 400 VOL 0 1 0')">
+                    Siren / Alarm
+                    <span>Frequency rises and falls</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Saw DUR 2.0 FREQ 100 50 VOL 0 1 0')">
+                    Power Down
+                    <span>Low frequency drop</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Pink DUR 3.0 VOL 0 0.5 0 CUTOFF 200 800 200 Q 10')">
+                    Wind Gust
+                    <span>Filtered Pink Noise</span>
+                </button>
+                 <button class="preset-btn" onclick="loadAndPlay('PLAY Brown DUR 3.0 VOL 0 0.8 0 COUNT 5 GAP -1 JITTER 1.5 VOL 0.6 1 0.3')">
+                    Rumbles
+                    <span>Brown Noise swell with variation</span>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Section: Granular (Organic) -->
+        <div class="panel">
+            <h3 style="margin-top:0">Granular / Stochastic</h3>
+            <p style="font-size:0.9em; color:#888;">Using <code>LOOP</code> and <code>JITTER</code> for pseudo-random sequences.</p>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Sine DUR 1.0 FREQ 400 800 400 VOL 0 1 0 COUNT 3 FREQ 400 500 200')">
+                    Siren
+                    <span>3x Repeated 400/500/200 </span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Clap VOL 1.0 0.1 0.1 GAP 0.1 0.02 0.02 0.02 0.3 COUNT 30 VOL 0.3 1')">
+                    Applause
+                    <span>Crowd swell with pitch jitter</span>
+                </button>
+                <button class="preset-btn" onclick="loadAndPlay('PLAY Pink DUR 0.02 GAP 0.01 0.4 0.01 0.4 COUNT 4 FREQ 800 LOOP 30 JITTER 0.01')">
+                    Horse Gallop
+                    <span>Rhythmic looping pattern</span>
+                </button>
+                 <button class="preset-btn" onclick="loadAndPlay('PLAY Sine DUR 0.1 GAP 0.1 0.3 VOL 0.2 COUNT 2 FREQ 100 80 LOOP 20 JITTER 0.07')">
+                    Heartbeat
+                    <span>Lub-Dub Sound</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * STA REDESIGN: CORE CLASSES (REFACTORED v0.2)
+ */
+
+// 1. STA CURVE
+// (Unchanged)
+class STACurve {
+    constructor(values) {
+        if (!Array.isArray(values)) this.values = [values];
+        else this.values = values.map(Number);
+    }
+    getAt(t) {
+        if (this.values.length === 1) return this.values[0];
+        t = Math.max(0, Math.min(1, t));
+        const scaled = t * (this.values.length - 1);
+        const i = Math.floor(scaled);
+        const m = scaled - i; 
+        if (i >= this.values.length - 1) return this.values[this.values.length - 1];
+        return this.values[i] + (this.values[i+1] - this.values[i]) * m;
+    }
+    getDistributed(count) {
+        if (count < 1) return [this.getAt(0)];
+        if (count == 1 )
+            return [ this.getAt( 0.5 )];
+        const result = [];
+        for (let i = 0; i < count; i++) {
+            result.push(this.getAt(i / (count - 1)));
+        }
+        return result;
+    }
+    getLooped(time, loopDuration) {
+        if (!loopDuration || loopDuration <= 0) return this.getAt(time);
+        const t = (time % loopDuration) / loopDuration; 
+        return this.getAt(t);
+    }
+}
+
+// 2. STA PARSER
+// Refactored for safety
+class STAParser {
+    parse(inputString) {
+        if (!inputString || typeof inputString !== 'string') return null;
+
+        const tokens = inputString.trim().split(/\s+/);
+        if (tokens.length < 2) return null;
+
+        const config = {
+            cmd: 'PLAY',
+            source: 'Sine',
+            params: {}
+        };
+
+        if (tokens[0].toUpperCase() !== 'PLAY') return null;
+        config.source = tokens[1];
+
+        let i = 2;
+        let postfix = ''
+        while (i < tokens.length) {
+            let key = tokens[i].toUpperCase();
+            if( ['FREQ','VOL'].includes( key ))
+                key += postfix;
+            i++;
+            let values = [];
+
+            // REFACTOR: Safety check to prevent index out of bounds
+            while (i < tokens.length) {
+                // Check if next token is a number
+                if (!isNaN(parseFloat(tokens[i]))) {
+                    values.push(parseFloat(tokens[i]));
+                    i++;
+                } else {
+                    break; // It's a key
+                }
+            }
+
+            // Store in params
+            config.params[key] = new STACurve(values);
+            if( key == "COUNT")
+                postfix = 'S'
+        }
+
+        this.applyDefaults(config);
+        return config;
+    }
+
+    applyDefaults(config) {
+        const p = config.params;
+        if (!p.DUR) p.DUR = new STACurve([0.1]);
+        if (!p.GAP) p.GAP = new STACurve([0.05]);
+        if (!p.VOL) p.VOL = new STACurve([1]);
+        if (!p.VOLS) p.VOLS = new STACurve([1]);
+        if (!p.FREQS) p.FREQS = new STACurve([400]);
+        if (!p.COUNT) p.COUNT = new STACurve([1]);
+        if (!p.LOOP) p.LOOP = new STACurve([1]);
+        if (!p.JITTER) p.JITTER = new STACurve([0]);
+    }
+}
+
+// 3. STA ENGINE
+// Refactored: Buffer Caching & Parameter Handling
+class STAEngine {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.analyser = this.ctx.createAnalyser();
+        this.analyser.fftSize = 2048;
+        this.analyser.connect(this.ctx.destination);
+        
+        // REFACTOR: Cache for noise buffers
+        this.buffers = {}; 
+        this.initBuffers();
+    }
+
+    // REFACTOR: Generate buffers once on init
+    initBuffers() {
+        this.buffers['WHITE'] = this.createNoiseBuffer('white');
+        this.buffers['PINK'] = this.createNoiseBuffer('pink');
+        this.buffers['BROWN'] = this.createNoiseBuffer('brown');
+    }
+
+    resume() {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    execute(config) {
+        this.resume();
+        this.playSequence(config);
+    }
+
+    // --- MODE B: SEQUENCE ---
+    playSequence(config) {
+        const p = config.params;
+        const now = this.ctx.currentTime;
+        const count = p.COUNT.getAt(0);// ignore multiple counts...
+        const loops = p.LOOP.getAt(0);// ignore multiple loops...
+
+        const jitter = p.JITTER.getDistributed(count);
+        const freqss = p.FREQS.getDistributed(count);
+        const volss = p.VOLS.getDistributed(count);
+        const durs = p.DUR.getDistributed(count);
+        const gaps = p.GAP.getDistributed(count);
+        const qs = p.GAP.getDistributed(count);
+
+        let startTime = now;
+
+        for ( let j=0 ; j< loops; j++){
+            for (let i = 0; i < count; i++) {
+                const { source, gain, filter } = this.createVoice(config.source);
+                
+                if (source.frequency) {
+                    if( p.FREQ )
+                        this.applyEnvelope(source.frequency, p.FREQ, startTime, durs[i], freqss[i]/400);
+                    else 
+                        source.frequency.value = freqss[i];
+                }
+
+                // Apply Q if filter exists
+                if (filter) {
+                    if (p.CUTOFF) {
+                        const curve = (p.CUTOFF instanceof STACurve) ? p.CUTOFF : new STACurve([p.CUTOFF]);
+                        this.applyEnvelope(filter.frequency, curve, now, durs[i], 1.0);
+                    }
+                    filter.Q.value = qs[i];
+                }
+                const multiplier = volss[i];
+                this.applyEnvelope(gain.gain, p.VOL, startTime, durs[i], multiplier);
+
+                source.start(startTime);
+                source.stop(startTime + durs[i]);
+
+                startTime += durs[i] + gaps[i] + jitter[i]*(Math.random()-0.5);
+            }
+        }
+    }
+
+    // --- AUDIO HELPERS ---
+
+    createVoice(type) {
+        type = type.toUpperCase();
+        let source, filter = null;
+        const gain = this.ctx.createGain();
+        gain.connect(this.analyser);
+
+        // 1. Oscillators
+        if (['SINE', 'SQUARE', 'SAW', 'TRIANGLE'].includes(type)) {
+            source = this.ctx.createOscillator();
+            if (type === 'SAW') 
+                source.type = 'sawtooth';
+            else
+                source.type = type.toLowerCase();
+        }
+        // 2. Buffer Sources (REFACTOR: Use Cache)
+        else {
+            let buffer = null;
+            if (type === 'PINK') buffer = this.buffers['PINK'];
+            else if (type === 'BROWN') buffer = this.buffers['BROWN'];
+            else if (type === 'CLAP' || type === 'CLICK') buffer = this.buffers['WHITE'];
+            else if (type === 'THUD') {
+                source = this.ctx.createOscillator();
+                source.type = 'sine';
+            }
+            else buffer = this.buffers['WHITE']; 
+
+            if (buffer) {
+                source = this.ctx.createBufferSource();
+                source.buffer = buffer;
+                source.loop = true; 
+            }
+        }
+
+        // Special Chains
+        if (type === 'CLAP' || type === 'PINK' || type === 'WIND') {
+            filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000; 
+            source.connect(filter);
+            filter.connect(gain);
+        } else {
+            source.connect(gain);
+        }
+
+        return { source, gain, filter };
+    }
+
+    applyAutomation(param, curve, startTime, duration) {
+        if (!curve) return;
+        const resolutions = 64; 
+        const values = new Float32Array(resolutions);
+        for(let i=0; i<resolutions; i++) {
+            values[i] = curve.getAt(i/(resolutions-1));
+        }
+        
+        try {
+            param.setValueCurveAtTime(values, startTime, duration);
+        } catch(e) {
+            param.setValueAtTime(values[0], startTime);
+        }
+    }
+
+    applyEnvelope(param, curve, startTime, duration, multiplier) {
+        if (!curve) return;
+        const resolutions = 32;
+        const values = new Float32Array(resolutions);
+        for(let i=0; i<resolutions; i++) {
+            values[i] = curve.getAt(i/(resolutions-1)) * multiplier;
+        }
+        // Safety against zero or negative duration errors
+        if (duration <= 0) duration = 0.001;
+        try {
+             param.setValueCurveAtTime(values, startTime, duration);
+        } catch (e) {
+             param.setValueAtTime(0, startTime);
+        }
+    }
+
+    // REFACTOR: Unified Noise Generator
+    createNoiseBuffer(type) {
+        const size = this.ctx.sampleRate * 2; // 2 sec buffer
+        const buf = this.ctx.createBuffer(1, size, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        
+        if (type === 'white') {
+            for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+        } 
+        else if (type === 'pink') {
+            let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0;
+            for (let i = 0; i < size; i++) {
+                const w = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + w * 0.0555179;
+                b1 = 0.99332 * b1 + w * 0.0750759;
+                b2 = 0.96900 * b2 + w * 0.1538520;
+                b3 = 0.86650 * b3 + w * 0.3104856;
+                b4 = 0.55000 * b4 + w * 0.5329522;
+                b5 = -0.7616 * b5 - w * 0.0168980;
+                data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+                b6 = w * 0.115926;
+            }
+        }
+        else if (type === 'brown') {
+            let lastOut = 0;
+            for (let i = 0; i < size; i++) {
+                const w = Math.random() * 2 - 1;
+                data[i] = (lastOut + (0.02 * w)) / 1.02;
+                lastOut = data[i];
+                data[i] *= 3.5;
+            }
+        }
+        return buf;
+    }
+}
+
+/**
+ * APPLICATION LOGIC
+ * (Existing UI Logic below remains the same)
+ */
+const parser = new STAParser();
+const engine = new STAEngine();
+const input = document.getElementById('staInput');
+const status = document.getElementById('statusText');
+
+document.getElementById('mainPlayBtn').addEventListener('click', () => {
+    runCommand(input.value);
+});
+
+window.loadAndPlay = (cmd) => {
+    input.value = cmd;
+    runCommand(cmd);
+}
+
+function runCommand(cmdStr) {
+    try {
+        const config = parser.parse(cmdStr);
+        if (!config) throw new Error("Invalid Command (Must start with PLAY)");
+        
+        console.log("Executed Config:", config);
+        engine.execute(config);
+        
+        status.innerHTML = `<span style="color:#0f0">Executing...</span> ${config.source}`;
+        setTimeout(() => status.innerHTML = "Ready.", (config.params.DUR * 1000) + 100);
+    } catch (e) {
+        console.error(e);
+        status.innerHTML = `<span style="color:#f00">Error:</span> ${e.message}`;
+    }
+}
+
+/**
+ * VISUALIZATION LOOP
+ */
+const canvas = document.getElementById('scope');
+const ctx = canvas.getContext('2d');
+const bufferLength = engine.analyser.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
+
+function draw() {
+    requestAnimationFrame(draw);
+    engine.analyser.getByteTimeDomainData(dataArray);
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#99f';
+    ctx.beginPath();
+
+    const sliceWidth = canvas.width * 1.0 / bufferLength;
+    let x = 0;
+
+    for(let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height/2;
+
+        if(i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+
+        x += sliceWidth;
+    }
+
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.stroke();
+}
+draw();
+</script>
+</body>
+</html>

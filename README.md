@@ -3,17 +3,20 @@
 This repo contains code developed at [Safer Centaurs](https://www.safercentaurs.com), where I blog about the AI-assisted development process.
 
 * In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools.
-* The actual code produced in the course of the blog posts is also useful. It's a gradually developing visual toolkit.
+* The actual code produced in the course of the blog posts is here, a gradually developing visual toolkit, with examples.
 
 ## Repository Structure
 ```
-├── js/              # Core graphics library - unified approach to diagrams, graphs, infographics
-│   ├── renderers/   # Pluggable output systems
-│   ├── widgets/     # Reusable UI components 
-│   ├── parsers/     # Input format handlers (Markdown, JSON, JaTeX, custom DSLs)
-│   └── core/        # Plugin system and shared abstractions
-├── artifacts/       # Small demos of code that have graduated from the 'spikes'
-└── spikes/          # Rapid prototypes testing new ideas WIP
+├── js/               # Core graphics library - unified approach to diagrams, graphs, infographics
+│   ├── renderers/    # Pluggable output systems
+│   ├── widgets/      # Reusable UI components 
+│   ├── parsers/      # Input format handlers (Markdown, JSON, JaTeX, custom DSLs)
+│   └── core/         # Plugin system and shared abstractions
+├── artifacts/        # Small demos of code that have graduated from the 'spikes'
+│   ├── lcars         # Star Trek inspired UI showing molecular structures
+│   ├── small-sounds  # A DSL for short sound effects
+│   └── ascii-tree    # Make trees for documentation by drag and drop
+└── spikes/           # Rapid prototypes testing new ideas WIP
 ```
 
 ## Architecture
@@ -23,6 +26,8 @@ AI-assisted development naturally pushes toward clean separation of concerns - t
 ## Quick Start
 
 Open any HTML file in `/spikes` or `/artifacts` directories directly in your browser - no build step required.
+
+The ideas behind, making of and documentation for these artifacts are on the Safer Centaurs website.
 
 ## Points to Consider
 

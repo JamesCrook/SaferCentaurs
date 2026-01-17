@@ -2,11 +2,8 @@
 
 This repo contains code developed at [Safer Centaurs](https://www.safercentaurs.com), where I blog about the AI-assisted development process.
 
-AI amplifies human capability - for better or worse. In Safer Centaurs I'm aiming to help democratise the good uses of AI, aiming for good outcomes.
-
-This works in two ways:
-* In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools. There is little point having access to AI tools without also having the know-how to use them effectively.
-* The actual code produced in the course of the blog posts is ultimately for communicating using diagrams. Visual metaphors work well for organising information. The diagram tools help us to work better with more information.
+* In the blog posts I am showing how to leverage AI to do more. This is part of democratising the AI tools.
+* The actual code produced in the course of the blog posts is also useful. It's a gradually developing visual toolkit.
 
 ## Repository Structure
 ```
@@ -15,9 +12,8 @@ This works in two ways:
 │   ├── widgets/     # Reusable UI components 
 │   ├── parsers/     # Input format handlers (Markdown, JSON, JaTeX, custom DSLs)
 │   └── core/        # Plugin system and shared abstractions
-├── spikes/          # Rapid prototypes testing new ideas
-├── mind-map/        # Markdown → interactive mind map application  
-└── framer/          # Comic book layout and creation tool
+├── artifacts/       # Small demos of code that have graduated from the 'spikes'
+└── spikes/          # Rapid prototypes testing new ideas WIP
 ```
 
 ## Architecture
@@ -26,14 +22,17 @@ AI-assisted development naturally pushes toward clean separation of concerns - t
 
 ## Quick Start
 
-Open any HTML file in `/spikes` or `/apps` directories directly in your browser - no build step required.
+Open any HTML file in `/spikes` or `/artifacts` directories directly in your browser - no build step required.
 
 ## Points to Consider
 
 * **Browser Compatibility:** Tested in Safari and Chrome. May work in Firefox too.
-* **Trusted Input:** Current markdown processing assumes trusted inputs - i.e. that you control the inputs and they are not malicious. Only use where those assumptions hold.
-* **Forward Compatibility:** The API is likely to change as the project develops. 
-* **Contributing:** Similar to Manim and SQLite, feedback welcome, open source, but don't submit pull/merge requests.
+* **Desktop First:** Generally the ideas are for desktop and not mobile. 
+* **Trusted Input:** Current markdown processing assumes trusted inputs - i.e. that you control the inputs and they are not malicious. Only serve the markdown where those assumptions hold.
+* **Forward Breaking:** The API is likely to change as the project develops. Beware. 
+* **Contributing:** Similar to policy on the Open Source software Manim and SQLite, feedback is welcome, the software is open source, but don't submit pull/merge requests.
+
+These are strategic choices for a workflow optimised for prototyping.
 
 ## License
 

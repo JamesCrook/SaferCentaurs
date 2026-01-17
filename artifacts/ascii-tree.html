@@ -505,7 +505,7 @@
           lines.push(node.name + '/');
           dirCount++;
         } else {
-          const connector = isLast ? '└── ' : '├── ';
+          const connector = isLast ? '└─ ' : '├─ ';
           const suffix = node.type === 'directory' ? '/' : '';
           lines.push(prefix + connector + node.name + suffix);
           
@@ -514,7 +514,7 @@
         }
 
         if (node.children) {
-          const childPrefix = prefix + (isRoot ? '' : (isLast ? '    ' : '│   '));
+          const childPrefix = prefix + (isRoot ? '' : (isLast ? '   ' : '│  '));
           node.children.forEach((child, i) => {
             const childIsLast = i === node.children.length - 1;
             traverse(child, childPrefix, childIsLast, false);

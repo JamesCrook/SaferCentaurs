@@ -12,6 +12,17 @@ framesWorld = {
       "endSlant": 0,
       "fill": "#fff",
       "outline": "#111"
+    },
+    {
+      "id": "blunt",
+      "angle": 0,
+      "width": 10,
+      "startEndType": "[",
+      "endEndType": "]",
+      "startSlant": 0,
+      "endSlant": 0,
+      "fill": "#fff",
+      "outline": "#111"
     }
   ],
   "pointStyles": [

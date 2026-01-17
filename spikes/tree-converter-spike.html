@@ -44,6 +44,7 @@
             margin-bottom: 20px;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .example-btn {
@@ -154,7 +155,7 @@
     <div class="container">
       <h1>🌳 Tree Format Converter</h1>
       <p class="subtitle">
-        Convert between ASCII art, Markdown lists, and path formats
+        Convert between ASCII art, Markdown lists, JSON arrays, and path formats
       </p>
       <div class="examples">
         <button class="example-btn" onclick="loadExample('exercises')">
@@ -162,6 +163,9 @@
         </button>
         <button class="example-btn" onclick="loadExample('teas')">
           🍵 Example: Teas
+        </button>
+        <button class="example-btn" onclick="loadExample('json')">
+          📊 Example: JSON
         </button>
       </div>
       <div class="input-section">
@@ -178,6 +182,7 @@
         <button class="format-btn" onclick="convert('markdown')">
           Markdown List
         </button>
+        <button class="format-btn" onclick="convert('json')">JSON Array</button>
         <button class="format-btn" onclick="convert('paths')">
           Sorted Paths
         </button>
@@ -216,7 +221,28 @@
 └── Herbal Tea
     ├── Chamomile
     ├── Peppermint
-    └── Rooibos`
+    └── Rooibos`,
+            json: `["Beverages", [
+  ["Hot Drinks", [
+    ["Coffee", [
+      "Espresso",
+      "Latte",
+      "Cappuccino"
+    ]],
+    ["Tea", [
+      "Green Tea",
+      "Black Tea"
+    ]]
+  ]],
+  ["Cold Drinks", [
+    "Soda",
+    "Juice",
+    ["Smoothies", [
+      "Fruit",
+      "Protein"
+    ]]
+  ]]
+]]`
         };
 
         function loadExample(type) {
@@ -228,6 +254,16 @@
         function detectFormat(text) {
             text = text.trim();
             if (!text) return null;
+            
+            // Try to parse as JSON first
+            if (text.startsWith('[')) {
+                try {
+                    JSON.parse(text);
+                    return 'json';
+                } catch (e) {
+                    // Not valid JSON, continue checking
+                }
+            }
             
             if (text.includes('├──') || text.includes('└──') || text.includes('│')) {
                 return 'ascii';
@@ -332,6 +368,42 @@
             return tree;
         }
 
+        function parseJSON(text) {
+            const data = JSON.parse(text);
+            return arrayToTree(data);
+        }
+
+        function arrayToTree(arr) {
+            if (!Array.isArray(arr)) {
+                // If it's just a string, return a leaf node
+                return { name: arr, children: [] };
+            }
+            
+            if (arr.length === 0) {
+                return { name: '', children: [] };
+            }
+            
+            // First element is the name
+            const name = arr[0];
+            const tree = { name: name, children: [] };
+            
+            // Check if there's a second element that's an array of children
+            if (arr.length === 2 && Array.isArray(arr[1])) {
+                // arr[1] is the children array
+                for (const child of arr[1]) {
+                    tree.children.push(arrayToTree(child));
+                }
+            } else {
+                // Old format: remaining elements are direct children
+                for (let i = 1; i < arr.length; i++) {
+                    const item = arr[i];
+                    tree.children.push(arrayToTree(item));
+                }
+            }
+            
+            return tree;
+        }
+
         function toASCII(node, prefix = '', isLast = true, isRoot = true) {
             let result = '';
             
@@ -384,6 +456,24 @@
             return result;
         }
 
+        function treeToArray(node) {
+            if (!node.children || node.children.length === 0) {
+                return node.name;
+            }
+            
+            const childrenArray = [];
+            for (const child of node.children) {
+                childrenArray.push(treeToArray(child));
+            }
+            
+            return [node.name, childrenArray];
+        }
+
+        function toJSON(tree) {
+            const arr = treeToArray(tree);
+            return JSON.stringify(arr, null, 2);
+        }
+
         function convert(targetFormat) {
             const input = document.getElementById('input').value;
             const detectedDiv = document.getElementById('detected');
@@ -396,7 +486,13 @@
             }
             
             const sourceFormat = detectFormat(input);
-            detectedDiv.textContent = `Detected format: ${sourceFormat === 'ascii' ? 'ASCII Art' : sourceFormat === 'markdown' ? 'Markdown' : 'Paths'}`;
+            const formatNames = {
+                'ascii': 'ASCII Art',
+                'markdown': 'Markdown',
+                'paths': 'Paths',
+                'json': 'JSON Array'
+            };
+            detectedDiv.textContent = `Detected format: ${formatNames[sourceFormat]}`;
             detectedDiv.style.display = 'block';
             
             let tree;
@@ -405,6 +501,8 @@
                     tree = parseASCII(input);
                 } else if (sourceFormat === 'markdown') {
                     tree = parseMarkdown(input);
+                } else if (sourceFormat === 'json') {
+                    tree = parseJSON(input);
                 } else {
                     tree = parsePaths(input);
                 }
@@ -414,6 +512,8 @@
                     result = toASCII(tree);
                 } else if (targetFormat === 'markdown') {
                     result = toMarkdown(tree);
+                } else if (targetFormat === 'json') {
+                    result = toJSON(tree);
                 } else {
                     const paths = toPaths(tree);
                     //paths.sort(); // Optional sorted list of paths
@@ -422,7 +522,7 @@
                 
                 output.textContent = result;
             } catch (e) {
-                output.textContent = 'Error parsing input. Please check your format.';
+                output.textContent = 'Error parsing input: ' + e.message + '\n\nPlease check your format.';
             }
         }
 
@@ -431,7 +531,13 @@
             if (text.trim()) {
                 const format = detectFormat(text);
                 const detectedDiv = document.getElementById('detected');
-                detectedDiv.textContent = `Detected format: ${format === 'ascii' ? 'ASCII Art' : format === 'markdown' ? 'Markdown' : 'Paths'}`;
+                const formatNames = {
+                    'ascii': 'ASCII Art',
+                    'markdown': 'Markdown',
+                    'paths': 'Paths',
+                    'json': 'JSON Array'
+                };
+                detectedDiv.textContent = `Detected format: ${formatNames[format]}`;
                 detectedDiv.style.display = 'block';
             } else {
                 document.getElementById('detected').style.display = 'none';

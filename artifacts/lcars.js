@@ -13,16 +13,45 @@ class LcarsUI {
   doCommand(event) {
     var elt = event.currentTarget || event.target;
     let action = elt.dataset.group
-    if(action == 'Help')
-      this.doHelp();
-    else if(action == 'Alignment')
-      this.doAlignment();
-    else if(action == 'Search Results')
-      this.doSearchResults();
-    else if(action == 'Job Queue')
-      this.doJobQueue();
-    else if(action == 'Links')
-      this.doLinks();
+    if( action == 'Cartoon')
+      changeRepresentation('cartoon')
+    else if( action == 'Spacefill')
+      changeRepresentation('spacefill');
+    else if( action == 'Surface')
+      changeRepresentation('surface');
+    else if( action == 'Licorice')
+      changeRepresentation('licorice');
+    else if( action == 'Ball + Stick')
+      changeRepresentation('ball+stick');
+    else if( action == 'Toggle Spin')  
+      toggleSpin();
+    else if( action == 'Recenter')  
+      centerView();
+    else if( action == 'Dark UI')  
+      setTheme('dark');
+    else if( action == 'Light UI')  
+      setTheme('light');
+    else if( action == 'Hemoglobin')
+      switchMolecule('1A3N', 'HEMOGLOBIN');
+    else if( action == 'Catalase')
+      switchMolecule('1DGF', 'CATALASE');
+    else if( action == 'B-DNA')
+      switchMolecule('1BNA', 'B-DNA');
+    else if( action == 'Chlorophyl')
+      switchMolecule('3ARC', 'CHLOROPHYL');
+    else if( action == 'TIM')
+      switchMolecule('1WYI', 'TIM BARREL');
+    else if( action == 'Insulin')
+      switchMolecule('1TRZ', 'INSULIN');
+    else if( action == 'GFP')
+      switchMolecule('1EMA', 'GREEN FL.');
+    else if( action == 'Overview')
+      showInfoSection('overview')
+    else if( action == 'Credits')
+      showInfoSection('credits')
+      //switchMolecule('4HHB', 'HGB HEX');
+    else if( action == 'Reset')
+      resetAll();
     else
       alert(`No handler for ${action}`);
   }

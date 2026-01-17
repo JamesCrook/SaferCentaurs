@@ -53,6 +53,7 @@
     --lcars-orange: #f39c12;
     --lcars-beige: #be9a86;
     --lcars-red: #e74c3c;
+    --lcars-blood-red: #c41212;
     --lcars-blue: #8fc0e0;
     --lcars-green: #2ecc71;
     --lcars-yellow: #eed071;
@@ -68,6 +69,13 @@
 /* =============================================================================
    2. APP SHELL (Structural)
    ============================================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ul { padding-left:20px; }
 
 body {
     /* Structural */
@@ -212,6 +220,7 @@ body {
     border-bottom-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
     padding-left: var(--lcars-overlap-h);
+
 }
 
 /* Bottom-left overlapped - also extends vertically */
@@ -254,6 +263,7 @@ body {
 .trp {
     border-top-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
+    padding-bottom: 0px;
 }
 
 /* Top-right overlapped - also extends vertically */
@@ -307,17 +317,18 @@ body {
    Example: <div class="block sblock bl purple">
    ============================================================================= */
 
-.purple { background-color: var(--lcars-purple); }
-.tan    { background-color: var(--lcars-tan); }
-.rust   { background-color: var(--lcars-rust); }
-.orange { background-color: var(--lcars-orange); }
-.beige  { background-color: var(--lcars-beige); }
-.red    { background-color: var(--lcars-red); }
-.blue   { background-color: var(--lcars-blue); }
-.green  { background-color: var(--lcars-green); }
-.yellow { background-color: var(--lcars-yellow); }
-.cyan   { background-color: var(--lcars-cyan); }
-.pink   { background-color: var(--lcars-pink); }
+.purple     { background-color: var(--lcars-purple); }
+.tan        { background-color: var(--lcars-tan); }
+.rust       { background-color: var(--lcars-rust); }
+.orange     { background-color: var(--lcars-orange); }
+.beige      { background-color: var(--lcars-beige); }
+.red        { background-color: var(--lcars-red); }
+.blood-red  { background-color: var(--lcars-blood-red); }
+.blue       { background-color: var(--lcars-blue); }
+.green      { background-color: var(--lcars-green); }
+.yellow     { background-color: var(--lcars-yellow); }
+.cyan       { background-color: var(--lcars-cyan); }
+.pink       { background-color: var(--lcars-pink); }
 
 
 /* =============================================================================

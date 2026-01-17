@@ -4,13 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SeqQuests Management Console</title>
-    <link rel="icon" href="./wheel.ico">
+    <link rel="icon" href="../wheel.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <!-- NGL Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ngl/2.0.0-dev.37/ngl.js"></script>
     <link rel="stylesheet" type="text/css" href="./lcars.css">
     <script src="./lcars.js"></script>
     <script src="./lcars_ui.js"></script>
+    <script src="./lcars-bio.js"></script>
+    <style>
+        /* Viewer Area - The Fix: Relative parent + Absolute child */
+        #viewport-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            border: 2px solid #222;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #viewport {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Status & Labels */
+        .status-display {
+            position: relative;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+            pointer-events: none;
+            z-index: 10;
+            height:0px;
+            overflow:display;
+        }
+
+        .label-id { font-size: 2.5rem; line-height: 1; color: var(--lcars-tan); }
+        .label-sub { font-size: 1rem; color: var(--lcars-orange); }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            font-size: 2rem;
+            letter-spacing: 5px;
+            flex-direction: column;
+        }
+    </style>
+
   </head>
   <body>
 <div onclick="window.history.back()" style="position: fixed; top: 20px; left: 20px; cursor: pointer; z-index: 1000; background: rgba(0, 0, 0, 0.7); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: background 0.3s;" onmouseover="this.style.background='rgba(0, 0, 0, 0.9)'" onmouseout="this.style.background='rgba(0, 0, 0, 0.7)'">
@@ -19,59 +71,168 @@
     <!-- First Panel -->
     <div class="lcar-panel" style="flex:1.3">
       <div class="sidebar left optional4">
-        <div class="block tan" data-group="Protein 1">-</div>
-        <div class="block rust" data-group="Map 1">-</div>
-        <div class="block sblock orange bl" data-group="Features">-</div>
+        <div class="block tan" data-group="Cartoon">-</div>
+        <div class="block rust" data-group="Spacefill">-</div>
+        <div class="block sblock orange bl" data-group="Surface">-</div>
       </div>
       <div class="central">
         <div class="panel-content blp brpo" id="MainPanel">
-          <h2>Primary Display Area</h2>
-          <p>This is the main content area of the panel.</p>
+            <div class="status-display">
+                <div class="label-id" id="mol-id">CATALASE</div>
+                <div class="label-sub" id="mol-pdb">PDB: 1DGF | STRUCTURAL ATLAS</div>
+            </div>
+
+            <div id="viewport-container">
+                <div id="viewport"></div>
+                <div id="loading" class="loading-overlay">
+                    <div id="status-text">INITIALIZING...</div>
+                    <div style="font-size: 0.8rem; margin-top: 10px; color: var(--lcars-orange)">CONNECTING TO PDB ARCHIVE</div>
+                </div>
+            </div>
         </div>
         <div class="bar barbot">
-          <div class="block sblock orange stub" data-group="Features">&nbsp;
+          <div class="block sblock orange stub" data-group="Surface">&nbsp;
           </div>
-          <div class="block tan" data-group="Alignment">-</div>
-          <div class="block orange" data-group="Protein 2">-</div>
-          <div class="block pink optional" data-group="Dotplot">-</div>
-          <div class="block ssblock purple stub" data-group="Copy">&nbsp;
+          <div class="block tan" data-group="Ball + Stick">-</div>
+          <div class="block orange" data-group="Licorice">-</div>
+          <div class="block pink optional" data-group="Recenter">-</div>
+          <div class="block ssblock purple stub" data-group="Reset">&nbsp;
           </div>
         </div>
       </div>
       <div class="sidebar right optional2">
-        <div class="block sblock tan" data-group="Alignment">-</div>
-        <div class="block yellow" data-group="Map 2">-</div>
-        <div class="block orange" data-group="Protein 2">-</div>
-        <div class="block purple br" data-group="Copy">-</div>
+        <div class="block sblock tan" data-group="Dark UI">-</div>
+        <div class="block yellow" data-group="Light UI">-</div>
+        <div class="block orange" data-group="Toggle Spin">-</div>
+        <div class="block purple br" data-group="Reset">-</div>
       </div>
     </div>
     <div class="shim">
     </div>
     <div class="lcar-panel">
       <div class="sidebar left optional2">
-        <div class="block green tl" data-group="Search Stats">-</div>
-        <div class="block cyan" data-group="Job Queue">-</div>
-        <div class="block purple" data-group="40274c">-</div>
+        <div class="block green tl" data-group="Chlorophyl">-</div>
+        <div class="block cyan" data-group="Catalase">-</div>
+        <div class="block blood-red" data-group="Hemoglobin">-</div>
       </div>
       <div class="central">
         <div class="bar bartop">
-          <div class="block sssblock green stub" data-group="Search Stats">&nbsp;
+          <div class="block sssblock green stub" data-group="Chlorophyl">&nbsp;
           </div>
-          <div class="block yellow" data-group="Configure">-</div>
-          <div class="block tan optional" data-group="40274b">-</div>
-          <div class="block yellow" data-group="Links">-</div>
-          <div class="block sblock beige stub" data-group="Help">&nbsp;
+          <div class="block yellow" data-group="TIM">-</div>
+          <div class="block tan optional" data-group="Insulin">-</div>
+          <div class="block green" data-group="GFP">-</div>
+          <div class="block sblock beige stub" data-group="Overview">&nbsp;
           </div>
         </div>
         <div class="panel-content tlpo trp" id="SubPanel">
-          <h2>Display Configuration Panel</h2>
-          <p>Another panel with buttons around it. Try 'Help'.</p>
+<section id="info-reset">
+          <h2>Display Selection Panel</h2>
+          <p>Try 'Overview'.</p>
+</section>
+
+<!-- HEMOGLOBIN (1A3N) -->
+<section id="info-hemoglobin" style="display:none;">
+    <h2>HEMOGLOBIN</h2>
+    <p><strong>Primary Function:</strong> Oxygen Transport</p>
+    <p>Hemoglobin is the iron-containing oxygen-transport metalloprotein in the red blood cells of all vertebrates. It carries oxygen from the lungs to the rest of the body, where it releases the oxygen to burn nutrients to provide energy to power the functions of the organism.</p>
+    <ul>
+        <li><strong>Quaternary Structure:</strong> A tetramer consisting of two alpha and two beta subunits.</li>
+        <li><strong>Active Site:</strong> Each subunit contains a heme group with an iron atom at its center.</li>
+    </ul>
+</section>
+
+<!-- CATALASE (1DGF) -->
+<section id="info-catalase" style="display:none;">
+    <h2>CATALASE</h2>
+    <p><strong>Primary Function:</strong> Antioxidant Defense</p>
+    <p>Catalase is a common enzyme found in nearly all living organisms exposed to oxygen. It catalyzes the decomposition of hydrogen peroxide to water and oxygen. It is a very important enzyme in protecting the cell from oxidative damage by reactive oxygen species (ROS).</p>
+    <ul>
+        <li><strong>Turnover Rate:</strong> One of the highest known; millions of hydrogen peroxide molecules per second.</li>
+        <li><strong>Morphology:</strong> A massive tetramer with four identical subunits.</li>
+    </ul>
+</section>
+
+<!-- B-DNA (1BNA) -->
+<section id="info-b-dna" style="display:none;">
+    <h2>B-DNA</h2>
+    <p><strong>Primary Function:</strong> Genetic Information Storage</p>
+    <p>B-DNA is the most common form of the DNA double helix found under physiological conditions. It consists of two antiparallel polynucleotide chains held together by hydrogen bonds between complementary base pairs (A-T and C-G).</p>
+    <ul>
+        <li><strong>Geometry:</strong> Right-handed helix with approximately 10.5 base pairs per turn.</li>
+        <li><strong>Key Features:</strong> Distinct major and minor grooves which serve as binding sites for proteins.</li>
+    </ul>
+</section>
+
+<!-- CHLOROPHYLL / PHOTOSYSTEM II (3ARC) -->
+<section id="info-chlorophyl" style="display:none;">
+    <h2>CHLOROPHYLL / PSII</h2>
+    <p><strong>Primary Function:</strong> Light Harvesting / Energy Conversion</p>
+    <p>Photosystem II (PSII) is the first link in the photosynthetic chain. It captures photons from sunlight to energize electrons that are then used to create chemical energy. Crucially, it is the only known biological system that can oxidize water into molecular oxygen.</p>
+    <ul>
+        <li><strong>Pigments:</strong> Contains Chlorophyll-a which absorbs light in the blue and red spectrums.</li>
+        <li><strong>Complexity:</strong> A multi-subunit membrane protein complex.</li>
+    </ul>
+</section>
+
+<!-- TRIOSEPHOSPHATE ISOMERASE (1WYI) -->
+<section id="info-tim" style="display:none;">
+    <h2>TIM BARREL</h2>
+    <p><strong>Primary Function:</strong> Glycolysis (Energy Metabolism)</p>
+    <p>Triosephosphate isomerase (TIM) is the "perfect enzyme," meaning its catalysis is limited only by the rate at which substrates can diffuse into its active site. It is famous in structural biology for its "TIM Barrel" fold.</p>
+    <ul>
+        <li><strong>The Barrel:</strong> An alpha/beta barrel consisting of eight alpha-helices and eight parallel beta-strands.</li>
+        <li><strong>Evolution:</strong> One of the most common and versatile protein folds in nature.</li>
+    </ul>
+</section>
+
+<!-- INSULIN (1TRZ) -->
+<section id="info-insulin" style="display:none;">
+    <h2>INSULIN</h2>
+    <p><strong>Primary Function:</strong> Hormonal Regulation of Glucose</p>
+    <p>Insulin is a peptide hormone produced by beta cells of the pancreatic islets. It is considered to be the main anabolic hormone of the body. It regulates the metabolism of carbohydrates, fats, and protein by promoting the absorption of glucose from the blood.</p>
+    <ul>
+        <li><strong>Structure:</strong> Composed of two peptide chains (A and B) linked by disulfide bonds.</li>
+        <li><strong>Storage:</strong> Often found in a hexameric form stabilized by zinc ions.</li>
+    </ul>
+</section>
+
+<!-- GREEN FLUORESCENT PROTEIN (1EMA) -->
+<section id="info-green" style="display:none;">
+    <h2>GREEN FL. PROTEIN (GFP)</h2>
+    <p><strong>Primary Function:</strong> Bioluminescence (Tool for Imaging)</p>
+    <p>Originally isolated from the jellyfish <em>Aequorea victoria</em>, GFP exhibits bright green fluorescence when exposed to light in the blue to ultraviolet range. It is used extensively as a reporter gene in molecular biology.</p>
+    <ul>
+        <li><strong>Beta-Can:</strong> A unique fold where 11 beta-strands form a cylinder protecting the central fluorophore.</li>
+        <li><strong>Fluorophore:</strong> Formed spontaneously from three amino acids (Ser65, Tyr66, Gly67).</li>
+    </ul>
+</section>
+
+<!-- OVERVIEW / HEMOGLOBIN HEXAMER (4HHB) -->
+<section id="info-overview" style="display:none;">
+    <h2>SYSTEM OVERVIEW</h2>
+    <p><strong>Atlas Scope:</strong> Fundamental Biopolymers</p>
+    <p>This module provides a comparative look at the building blocks of life. From the genetic blueprint (DNA) to the enzymes that facilitate metabolism (TIM) and the hormones that regulate system-wide state (Insulin).</p>
+    <ul>
+        <li><strong>Visual Legend:</strong> Use buttons around the main panel to toggle between atomic detail and tertiary structure.</li>
+        <li><strong>Bio-Data:</strong> Structural data is retrieved in real-time from the PDB Global Archive.</li>
+    </ul>
+</section>
+
+<section id="info-credits" style="display:none;">
+    <h2>CREDITS</h2>
+    <ul>
+        <li><strong>PDB:</strong> Provide the 3D coordinate data.</li>
+        <li><strong>NGL:</strong> Provide the 3D molecular viewer.</li>
+    </ul>
+</section>
+
         </div>
       </div>
       <div class="sidebar right optional4">
-        <div class="block sblock beige tr" data-group="Help">-</div>
-        <div class="block blue" data-group="Search Results">-</div>
-        <div class="block mblock green" data-group="Credits">-</div>
+        <div class="block sblock beige tr" data-group="Overview">-</div>
+        <div class="block blue" data-group="B-DNA">-</div>
+        <div class="block mblock yellow" data-group="Credits">-</div>
       </div>
     </div>
     <div id="config-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: var(--bg-secondary); padding: 20px; border: 1px solid var(--accent-primary); width: 80%; max-width: 800px; max-height: 80vh;">

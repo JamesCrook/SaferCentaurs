@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniChart — Unified Charting</title>
+  <link rel="icon" type="image/x-icon" href="../wheel.ico">
+  <script src="../js/utilities/nav.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+      overflow: hidden;
+    }
+    h1 { text-align: center; margin-bottom: 10px; color: #fff; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 14px; }
+    
+    .layout {
+      display: flex;
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+      height: calc(100vh - 100px);
+    }
+    
+    .chart-container {
+      flex: 1;
+      background: #16213e;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      cursor: grab;
+    }
+    
+    .chart-container:active { cursor: grabbing; }
+    .chart-container svg { background: #0f0f23; border-radius: 8px; }
+    
+    .controls {
+      width: 300px;
+      background: #16213e;
+      border-radius: 12px;
+      padding: 15px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    
+    .control-group { margin-bottom: 16px; }
+    
+    .control-group h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    
+    .control { margin-bottom: 10px; }
+    .control label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+    .control label span:last-child { color: #4fc3f7; font-family: monospace; font-size: 11px; }
+    
+    input[type="range"] {
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: #0f0f23;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #4fc3f7;
+      cursor: pointer;
+    }
+    
+    .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    
+    .preset-btn {
+      padding: 5px 10px;
+      border: 1px solid #4fc3f7;
+      background: transparent;
+      color: #4fc3f7;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+    
+    .preset-btn:hover, .preset-btn.active { background: #4fc3f7; color: #1a1a2e; }
+    
+    .hint { font-size: 10px; color: #555; margin-top: 10px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <h1>OmniChart</h1>
+  <p class="subtitle">One engine, all charts. Drag to pan, scroll to zoom, use sliders to morph.</p>
+  
+  <div class="layout">
+    <div class="chart-container" id="chart-container">
+      <svg id="chart" width="800" height="650"></svg>
+    </div>
+    <div class="controls" id="controls"></div>
+  </div>
+
+<script>
+// ============================================================
+// Mini Vector Library
+// ============================================================
+
+const V = {
+  create: (x, y) => ({ x, y }),
+  add: (a, b) => ({ x: a.x + b.x, y: a.y + b.y }),
+  sub: (a, b) => ({ x: a.x - b.x, y: a.y - b.y }),
+  scale: (v, s) => ({ x: v.x * s, y: v.y * s }),
+  lerp: (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }),
+  dist: (a, b) => Math.hypot(b.x - a.x, b.y - a.y),
+  fromPolar: (r, angle) => ({ x: r * Math.cos(angle), y: r * Math.sin(angle) }),
+  addPolar: (center, r, angle) => V.add(center, V.fromPolar(r, angle)),
+  mid: (a, b) => V.scale(V.add(a, b), 0.5),
+  perp: (v) => ({ x: -v.y, y: v.x }),
+  normalize: (v) => {
+    const len = Math.hypot(v.x, v.y);
+    return len > 0 ? V.scale(v, 1 / len) : { x: 0, y: 0 };
+  },
+  rotate: (v, center, angle) => {
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const d = V.sub(v, center);
+    return V.add(center, { x: d.x * cos - d.y * sin, y: d.x * sin + d.y * cos });
+  }
+};
+
+const lerp = (a, b, t) => a + (b - a) * t;
+
+
+// ============================================================
+// WarpedPolygon - Unified quadrilateral with bend-based arc edges
+// Inspired by quad-spike's approach: bend=0 straight, bend=π half-circle
+// ============================================================
+
+const WarpedPolygon = {
+  // Generate SVG path for a warped polygon
+  // corners: array of 4 corner points [{x, y}, ...]
+  // bends: array of 4 bend values (radians), bend=0 straight, bend=π half-circle
+  path(corners, bends) {
+    let d = `M ${corners[0].x} ${corners[0].y}`;
+    for (let i = 0; i < 4; i++) {
+      d += this._edge(corners[i], corners[(i + 1) % 4], bends[i]);
+    }
+    return d + ' Z';
+  },
+  
+  // Generate path for just the top edge (corners[2] to corners[3])
+  topPath(corners, bends) {
+    const p1 = corners[2], p2 = corners[3];
+    return `M ${p1.x} ${p1.y}` + this._edge(p1, p2, bends[2]);
+  },
+  
+  // Calculate arc parameters from bend value (based on quad-spike approach)
+  // bend = arc angle subtended: 0 = straight, π = semicircle, 2π = full circle
+  // positive bend = arc bulges left (counterclockwise), negative = right (clockwise)
+  _getArcParams(p1, p2, bend) {
+    const chord = V.sub(p2, p1);
+    const chordLength = Math.hypot(chord.x, chord.y);
+    const midpoint = V.mid(p1, p2);
+    
+    // Radius from chord length and arc angle: chord = 2 * r * sin(|bend|/2)
+    const halfBend = Math.abs(bend) / 2;
+    const sinHalf = Math.sin(halfBend);
+    if (sinHalf < 0.0001) return null; // nearly straight
+    
+    const radius = chordLength / (2 * sinHalf);
+    
+    // Distance from midpoint to center along perpendicular
+    const distToCenter = radius * Math.cos(halfBend);
+    
+    // Perpendicular direction (sign of bend determines side)
+    const perp = V.normalize(V.perp(chord));
+    const sign = bend > 0 ? 1 : -1;
+    const center = V.add(midpoint, V.scale(perp, -sign * distToCenter));
+    
+    // Calculate start and end angles from center
+    const startAngle = Math.atan2(p1.y - center.y, p1.x - center.x);
+    const endAngle = Math.atan2(p2.y - center.y, p2.x - center.x);
+    
+    // Counterclockwise if positive bend
+    const counterclockwise = bend > 0;
+    
+    return { center, radius, startAngle, endAngle, counterclockwise };
+  },
+  
+  _edge(p1, p2, bend) {
+    const chord = V.dist(p1, p2);
+    if (chord < 0.001) return '';
+    
+    // If bend is near zero, draw straight line
+    if (!bend || Math.abs(bend) < 0.01) {
+      return ` L ${p2.x} ${p2.y}`;
+    }
+    
+    const arcParams = this._getArcParams(p1, p2, bend);
+    if (!arcParams) {
+      return ` L ${p2.x} ${p2.y}`;
+    }
+    
+    const { radius, counterclockwise, startAngle, endAngle } = arcParams;
+    
+    // Check if radius is too large (nearly straight)
+    if (radius > chord * 100) {
+      return ` L ${p2.x} ${p2.y}`;
+    }
+    
+    // Calculate angular difference to determine large arc flag
+    let angleDiff = endAngle - startAngle;
+    if (counterclockwise) {
+      if (angleDiff < 0) angleDiff += Math.PI * 2;
+    } else {
+      if (angleDiff > 0) angleDiff -= Math.PI * 2;
+    }
+    const largeArc = Math.abs(angleDiff) > Math.PI ? 0 : 1;
+    const sweep = counterclockwise ? 0 : 1;
+    
+    return ` A ${radius} ${radius} 0 ${largeArc} ${sweep} ${p2.x} ${p2.y}`;
+  }
+};
+
+
+// ============================================================
+// OmniChart Core Engine
+// ============================================================
+
+const OmniChart = (function() {
+  
+  const COLORS = ['#4fc3f7', '#81c784', '#ffb74d', '#f06292', '#ba68c8', '#4db6ac', '#fff176', '#a1887f'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const PRODUCTS = ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'];
+  const NUM_PRODUCTS = 5;
+  
+  const seededRandom = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  const generateData = (numCategories) => {
+    const labels = MONTHS.slice(0, numCategories);
+    const series = [];
+    for (let s = 0; s < NUM_PRODUCTS; s++) {
+      const values = [];
+      for (let c = 0; c < numCategories; c++) {
+        values.push(15 + Math.floor(seededRandom(s * 100 + c * 7 + 42) * 40));
+      }
+      series.push({ name: PRODUCTS[s], values });
+    }
+    return { labels, series };
+  };
+  
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const createElement = (tag) => document.createElementNS(svgNS, tag);
+  
+  const getDrawOrder = (focusProduct, numProducts) => {
+    const order = [];
+    for (let p = 0; p < numProducts; p++) {
+      order.push((focusProduct - 1 + p) % NUM_PRODUCTS);
+    }
+    return order;
+  };
+  
+  // ---- Segment Calculation ----
+  
+  const calcAllSegments = (data, params) => {
+    const { stack, normalize, focusProduct, numProducts } = params;
+    const numCats = data.labels.length;
+    const drawOrder = getDrawOrder(focusProduct, numProducts);
+    
+    const useAllForNorm = numProducts === 1 || numProducts === NUM_PRODUCTS;
+    const normIndices = useAllForNorm ? [0, 1, 2, 3, 4] : drawOrder;
+    
+    const categoryTotals = data.labels.map((_, i) => 
+      normIndices.reduce((sum, idx) => sum + data.series[idx].values[i], 0)
+    );
+    const maxTotal = Math.max(...categoryTotals);
+    const maxSingle = Math.max(...drawOrder.flatMap(idx => data.series[idx].values));
+    
+    const result = [];
+    
+    for (let i = 0; i < numCats; i++) {
+      const catSegs = [];
+      let stackedY = 0;
+      
+      for (const origIdx of drawOrder) {
+        const rawValue = data.series[origIdx].values[i];
+        const normVal = categoryTotals[i] > 0 ? rawValue / categoryTotals[i] : 0;
+        const rawScaled = rawValue / maxTotal;
+        const singleScaled = rawValue / maxSingle;
+        const value = lerp(rawScaled, normVal, normalize);
+        const valueOverlay = lerp(singleScaled, normVal, normalize);
+        
+        const y0 = lerp(0, stackedY, stack);
+        const y1 = lerp(valueOverlay, stackedY + value, stack);
+        
+        catSegs.push({ origIdx, y0, y1, rawValue, color: COLORS[origIdx % COLORS.length] });
+        stackedY += value;
+      }
+      result.push(catSegs);
+    }
+    return result;
+  };
+  
+  // ---- Unified Geometry Calculation with Bend-based edges ----
+  // bend: 0 = straight shared baseline, 2π = circular shared baseline
+  // bendStack: 0 = straight vertical stacks, 1 = circular stacks (donuts)
+  // gridiness: 0 = stack centers on shared baseline, 1 = stack centers in grid
+  
+  const calcUnifiedGeometry = (allSegs, data, params, bounds, panZoom) => {
+    const { bend, bendStack, gridiness, rotation, categoryRotation, segmentWidth, segmentGap, baseline, alignment, zoom, flatness } = params;
+    const numCats = data.labels.length;
+    const scale = Math.pow(2, zoom - 1);
+    
+    const maxHeights = allSegs.map(segs => Math.max(...segs.map(s => s.y1)));
+    const globalMax = Math.max(...maxHeights);
+    
+    const geometries = [];
+    
+    const chartCenter = V.create(bounds.cx + panZoom.panX, bounds.cy + panZoom.panY);
+    const chartW = bounds.width * scale;
+    const chartH = bounds.height * scale;
+    
+    // === Grid layout (gridiness = 1) ===
+    const cols = Math.ceil(Math.sqrt(numCats * 1.5));
+    const rows = Math.ceil(numCats / cols);
+    const cellW = chartW / cols;
+    const cellH = chartH / rows;
+    const gridTopLeft = V.create(chartCenter.x - cellW * cols / 2, chartCenter.y - cellH * rows / 2);
+    
+    // === Bar layout (bend = 0, bendStack = 0) ===
+    const barTopLeft = V.create(chartCenter.x - chartW / 2, chartCenter.y - chartH / 2);
+    const bandW = chartW / numCats;
+    const barW = bandW * Math.max(0.001, segmentWidth) * (1 - segmentGap);
+    
+    // === Radial layout parameters ===
+    const radialMaxR = Math.min(chartW, chartH) / 2 * 0.85;
+    const radialRange = chartH;
+    const radialMinR = chartH / 2;
+    
+    // === Donut layout (bendStack = 1) ===
+    const donutR = Math.min(bandW, chartH) * 0.4;
+    const pieR = Math.min(cellW, cellH) * 0.38;
+    const donutInnerRatio = 1 - Math.max(0.05, segmentWidth);
+    const donutGapAngle = segmentGap * 0.1;
+    
+    const baselineArcR = Math.min(chartW, chartH) / 2 * 0.5;
+    const bendBlend = Math.min(1, bend / (Math.PI * 2));
+    
+    // The bend value for horizontal edges (baseline and top) when bend > 0
+    // At bend = 2π, we want a full circle, so the edge bend should be 2π/numCats
+    // But we need to account for the segment width and gaps
+    const effBend = Math.max(bend, 0.0001);
+    const fullSliceAngle = effBend / numCats;
+    const sliceAngle = fullSliceAngle * segmentWidth * (1 - segmentGap);
+    
+    for (let i = 0; i < numCats; i++) {
+      const alignShift = alignment * (globalMax - maxHeights[i]);
+      
+      // === Category center positions ===
+      
+      // Bar position (bend=0, on horizontal line), then rotated
+      const barCatX = barTopLeft.x + (i + 0.5) * bandW;
+      const barCatPosUnrotated = V.create(barCatX, chartCenter.y);
+      const barCatPos = V.rotate(barCatPosUnrotated, chartCenter, categoryRotation);
+      
+      // Category angle for radial layout
+      const catBaseAngle = -Math.PI / 2 + rotation + categoryRotation;
+      const catAngle = catBaseAngle - (effBend / 2) + (i + 0.5) * fullSliceAngle;
+      const radialCatPos = V.addPolar(chartCenter, baselineArcR, catAngle);
+      
+      // Baseline position = lerp by bend
+      const baselineCatPos = V.lerp(barCatPos, radialCatPos, bendBlend);
+      
+      // Grid position
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const gridCatPos = V.create(
+        gridTopLeft.x + (col + 0.5) * cellW,
+        gridTopLeft.y + (row + 0.5) * cellH
+      );
+      
+      // Category center (for donut mode)
+      const catCenter = V.lerp(baselineCatPos, gridCatPos, gridiness);
+      
+      // Donut radius interpolates between baseline size and grid size
+      const currentDonutR = lerp(donutR, pieR, gridiness);
+      const currentDonutInnerR = currentDonutR * donutInnerRatio;
+      
+      // === Process segments ===
+      for (const seg of allSegs[i]) {
+        const next = allSegs[(i + 1)%numCats]?.find(s => s.origIdx === seg.origIdx);
+        
+        // Flatness blending for lines between categories
+        const y1L = seg.y1;
+        const y0L = seg.y0;
+        const y1R = lerp(next ? next.y1 : seg.y1, seg.y1, flatness);
+        const y0R = lerp(next ? next.y0 : seg.y0, seg.y0, flatness);
+        
+        // ============ Calculate shared baseline corners ============
+        const toYBar = v => barTopLeft.y + chartH * (1 - (v + alignShift - baseline + 0.5));
+        const halfBarW = barW / 2;
+        
+        // For bend > 0: corners are placed on arcs
+        const baselineSpineR = (radialMinR + (baseline - 0.5) * radialRange) * 0.5;
+        const bendAngularSpan = bend;
+        const barBaselineLength = chartW;
+        const radialBaselineLength = 2 * Math.PI * baselineSpineR;
+        const baselineArcLength = lerp(barBaselineLength, radialBaselineLength, bendBlend);
+        
+        const minBendAngularSpan = 0.0001;
+        const bendSpineR = baselineArcLength / Math.max(bendAngularSpan, minBendAngularSpan);
+        const bendCenterOffset = bendSpineR - baselineSpineR;
+        const bendArcCenter = V.create(chartCenter.x, chartCenter.y + bendCenterOffset);
+        const rotatedBendArcCenter = V.rotate(bendArcCenter, chartCenter, rotation + categoryRotation);
+        
+        const bendBaseAngle = -Math.PI / 2 + rotation + categoryRotation;
+        const catCenterAngle = bendBaseAngle - (bend / 2) + (i + 0.5) * fullSliceAngle;
+        const bendSliceAngle = fullSliceAngle * segmentWidth * (1 - segmentGap);
+        const bendAStart = catCenterAngle - bendSliceAngle / 2;
+        const bendAEnd = catCenterAngle + bendSliceAngle / 2;
+        
+        const heightScale = lerp(chartH, radialRange * 0.25, bendBlend);
+        const baseShift = 1.5 * baseline * (1 - bendBlend);
+        const h0L = (y0L + alignShift - baseShift) * heightScale;
+        const h1L = (y1L + alignShift - baseShift) * heightScale;
+        const h0R = (y0R + alignShift - baseShift) * heightScale;
+        const h1R = (y1R + alignShift - baseShift) * heightScale;
+        
+        const r0L = bendSpineR + h0L;
+        const r1L = bendSpineR + h1L;
+        const r0R = bendSpineR + h0R;
+        const r1R = bendSpineR + h1R;
+        
+        // Shared baseline corners (using polar for bent, cartesian for straight)
+        // Ensuring these match up was tricky, and it could make sense to instead
+        // use some imperceptible bend always
+        const sharedCorners = bend < 0.001 ? [
+          V.rotate(V.create(barCatX - halfBarW, toYBar(y0L)), chartCenter, rotation + categoryRotation),
+          V.rotate(V.create(barCatX + halfBarW, toYBar(y0R)), chartCenter, rotation + categoryRotation),
+          V.rotate(V.create(barCatX + halfBarW, toYBar(y1R)), chartCenter, rotation + categoryRotation),
+          V.rotate(V.create(barCatX - halfBarW, toYBar(y1L)), chartCenter, rotation + categoryRotation)
+        ] : [
+          V.addPolar(rotatedBendArcCenter, r0L, bendAStart),
+          V.addPolar(rotatedBendArcCenter, r0R, bendAEnd),
+          V.addPolar(rotatedBendArcCenter, r1R, bendAEnd),
+          V.addPolar(rotatedBendArcCenter, r1L, bendAStart)
+        ];
+        
+        // ============ Calculate donut corners ============
+        const donutSpineR = (currentDonutR + currentDonutInnerR) / 2;
+        const donutHalfThick = (currentDonutR - currentDonutInnerR) / 2;
+        
+        const barUpDir = rotation + categoryRotation - Math.PI / 2;
+        const barRightDir = rotation + categoryRotation;
+        
+        const targetAngularSpan = bendStack * 2 * Math.PI;
+        const barArcLength = chartH;
+        const donutArcLength = 2 * Math.PI * donutSpineR;
+        const arcLength = lerp(barArcLength, donutArcLength, bendStack);
+        
+        const minAngularSpan = 0.0001;
+        const spineR = arcLength / Math.max(targetAngularSpan, minAngularSpan);
+        const centerOffset = spineR - donutSpineR;
+        const localArcCenter = V.addPolar(catCenter, centerOffset, barRightDir);
+        
+        const halfThick = lerp(halfBarW, donutHalfThick, bendStack);
+        const outerR = spineR + halfThick;
+        const innerR = spineR - halfThick;
+        
+        const baseAngle = barRightDir + Math.PI;
+        const gapAngle = lerp(0, donutGapAngle, bendStack);
+        
+        const v0 = seg.y0 + alignShift;
+        const v1 = seg.y1 + alignShift;
+        
+        const theta0 = baseAngle + (v0 - 0.5) * targetAngularSpan + gapAngle / 2;
+        const theta1 = baseAngle + (v1 - 0.5) * targetAngularSpan - gapAngle / 2;
+        
+        const donutCorners = [
+          V.addPolar(localArcCenter, outerR, theta0),
+          V.addPolar(localArcCenter, innerR, theta0),
+          V.addPolar(localArcCenter, innerR, theta1),
+          V.addPolar(localArcCenter, outerR, theta1)
+        ];
+        
+        // ============ Final corners (blend shared↔donut by bendStack) ============
+        const corners = sharedCorners.map((sc, idx) => V.lerp(sc, donutCorners[idx], bendStack));
+        
+        // Skip degenerate segments
+        if (V.dist(corners[0], corners[1]) < 0.5 && V.dist(corners[2], corners[3]) < 0.5) continue;
+        
+        // ============ Calculate bend values for each edge ============
+        // Edge indices: 0 = bottom (0→1), 1 = right (1→2), 2 = top (2→3), 3 = left (3→0)
+        // 
+        // For bend parameter (shared baseline curving):
+        //   - Edges 0 and 2 (horizontal) should curve with bend
+        //   - Bend sign: positive = arc bulges outward from center
+        //
+        // For bendStack parameter (donut formation):
+        //   - Edges 1 and 3 (vertical/radial) should curve with bendStack
+        //
+        // The key insight: bend value = angular span of that edge
+        
+        // Horizontal edges: angular span from bend parameter
+        const edgeBendH = bendSliceAngle;
+        
+        // Vertical edges: angular span from bendStack parameter
+        const stackAngularSpan = (v1 - v0) * -targetAngularSpan;
+        
+        const bends = [
+          -edgeBendH,        // 0: bottom edge bulges inward (toward arc center)
+          stackAngularSpan,  // 1: inner edge
+          edgeBendH,         // 2: top edge bulges outward (away from arc center)
+          -stackAngularSpan  // 3: outer edge
+        ];
+        
+        geometries.push({
+          type: 'warpedpoly',
+          corners,
+          bends: bends.map(b => b * params.curviness),
+          color: seg.color
+        });
+      }
+      
+      // ============ Label ============
+      const barLabelPos = V.rotate(V.create(barCatX, barTopLeft.y + chartH + 20), chartCenter, rotation + categoryRotation);
+      const radialLabelPos = V.addPolar(chartCenter, radialMaxR + 15, catAngle);
+      const sharedLabelPos = V.lerp(barLabelPos, radialLabelPos, bendBlend);
+      
+      const donutLabelPos = V.create(catCenter.x, catCenter.y + currentDonutR + 15);
+      const labelPos = V.lerp(sharedLabelPos, donutLabelPos, bendStack);
+      
+      geometries.push({
+        type: 'label',
+        x: labelPos.x,
+        y: labelPos.y,
+        text: data.labels[i],
+        rotation: bendStack < 0.5 ? rotation + categoryRotation : 0,
+        angle: bendBlend > 0.5 && bendStack < 0.5 ? catAngle : undefined
+      });
+    }
+    
+    return geometries;
+  };
+  
+  // ---- Rendering ----
+  
+  const renderGeometries = (group, geoms, params) => {
+    const { fillOpacity, strokeWidth, topWidth } = params;
+    
+    for (const g of geoms) {
+      if (g.type === 'warpedpoly') {
+        const pathD = WarpedPolygon.path(g.corners, g.bends);
+        
+        const path = createElement('path');
+        path.setAttribute('d', pathD);
+        path.setAttribute('fill', g.color);
+        path.setAttribute('fill-opacity', g.opacity ?? fillOpacity);
+        if (strokeWidth > 0) {
+          path.setAttribute('stroke', g.color);
+          path.setAttribute('stroke-width', strokeWidth);
+        }
+        group.appendChild(path);
+        
+        if (topWidth > 0) {
+          const topD = WarpedPolygon.topPath(g.corners, g.bends);
+          const topPath = createElement('path');
+          topPath.setAttribute('d', topD);
+          topPath.setAttribute('stroke', g.color);
+          topPath.setAttribute('stroke-width', topWidth);
+          topPath.setAttribute('stroke-linecap', 'round');
+          topPath.setAttribute('fill', 'none');
+          topPath.setAttribute('opacity', g.opacity ?? 1);
+          group.appendChild(topPath);
+        }
+      } else if (g.type === 'label') {
+        const text = createElement('text');
+        text.setAttribute('x', g.x);
+        text.setAttribute('y', g.y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#888');
+        text.setAttribute('font-size', '11px');
+        if (g.opacity !== undefined) text.setAttribute('opacity', g.opacity);
+        
+        let textRot = 0;
+        if (g.angle !== undefined) {
+          let deg = (g.angle * 180 / Math.PI) % 360;
+          if (deg < 0) deg += 360;
+          textRot = (deg > 90 && deg < 270) ? deg + 180 : deg;
+        } else if (g.rotation !== undefined && g.rotation !== 0) {
+          let deg = (g.rotation * 180 / Math.PI) % 360;
+          if (deg < 0) deg += 360;
+          textRot = (deg >= 67.5 && deg < 112.5) ? -90 : (deg >= 247.5 && deg < 292.5) ? 90 : 0;
+        }
+        
+        if (textRot !== 0) {
+          text.setAttribute('transform', `rotate(${textRot}, ${g.x}, ${g.y})`);
+        }
+        
+        text.textContent = g.text;
+        group.appendChild(text);
+      }
+    }
+  };
+  
+  // ---- Main Render ----
+  
+  const render = (svg, data, params, panZoom = { panX: 0, panY: 0 }) => {
+    const width = parseInt(svg.getAttribute('width'));
+    const height = parseInt(svg.getAttribute('height'));
+    
+    svg.innerHTML = '';
+    
+    const bounds = { cx: width / 2, cy: height / 2, width: width - 100, height: height - 100 };
+    const mainGroup = createElement('g');
+    
+    const allSegs = calcAllSegments(data, params);
+    const geoms = calcUnifiedGeometry(allSegs, data, params, bounds, panZoom);
+    renderGeometries(mainGroup, geoms, params);
+    
+    svg.appendChild(mainGroup);
+    renderLegend(svg, data.series, params.focusProduct, params.numProducts);
+  };
+  
+  const renderLegend = (svg, series, focusProduct, numProducts) => {
+    const drawOrder = getDrawOrder(focusProduct, numProducts);
+    const legendGroup = createElement('g');
+    legendGroup.setAttribute('transform', 'translate(15, 15)');
+    
+    for (let p = 0; p < drawOrder.length; p++) {
+      const origIdx = drawOrder[p];
+      const g = createElement('g');
+      g.setAttribute('transform', `translate(0, ${p * 18})`);
+      
+      const rect = createElement('rect');
+      rect.setAttribute('width', 10);
+      rect.setAttribute('height', 10);
+      rect.setAttribute('fill', COLORS[origIdx % COLORS.length]);
+      rect.setAttribute('rx', 2);
+      
+      const text = createElement('text');
+      text.setAttribute('x', 15);
+      text.setAttribute('y', 9);
+      text.setAttribute('fill', '#888');
+      text.setAttribute('font-size', '10px');
+      text.textContent = series[origIdx].name;
+      
+      g.appendChild(rect);
+      g.appendChild(text);
+      legendGroup.appendChild(g);
+    }
+    
+    svg.appendChild(legendGroup);
+  };
+  
+  // ---- Presets ----
+  
+  const PRESETS = {
+    'Stacked': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 0.8, segmentGap: 0.08,
+      flatness: 1, stack: 1, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 1, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Stream Graph': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1, segmentGap: 0,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0.9, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Area Chart': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1, segmentGap: 0,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0.7, strokeWidth: 0, topWidth: 1, zoom: 1
+    },
+    'Line Chart': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1, segmentGap: 0,
+      flatness: 0, stack: 0, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0.06, strokeWidth: 0, topWidth: 2.5, zoom: 1
+    },
+    'Bar Chart': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 0.92, segmentGap: 0,
+      flatness: 1, stack: 0, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0.1, strokeWidth: 1, topWidth: 3, zoom: 1
+    },
+    'Horizontal Bar': {
+      bend: 0, bendStack: 0, gridiness: 0, rotation: 1.5708, categoryRotation: 0, segmentWidth: 0.8, segmentGap: 0.08,
+      flatness: 1, stack: 1, baseline: 0.5, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 1, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Spider': {
+      bend: 6.283, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1.0, segmentGap: 0.02,
+      flatness: 0, stack: 1, baseline: 0.3, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0.15, strokeWidth: 0.5, topWidth: 2, zoom: 1
+    },
+    'Radial Bar': {
+      bend: 6.283, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1.0, segmentGap: 0.02,
+      flatness: 1, stack: 1, baseline: 0.3, alignment: 0, curviness: 1,
+      normalize: 0, fillOpacity: 0.8, strokeWidth: 0.5, topWidth: 0, zoom: 1
+    },
+    'Radial Line': {
+      bend: 6.283, bendStack: 0, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 1.0, segmentGap: 0.02,
+      flatness: 0, stack: 0, baseline: 0.3, alignment: 0, curviness: 0,
+      normalize: 0, fillOpacity: 0, strokeWidth: 0.5, topWidth: 2.5, zoom: 1
+    },
+    'Donut Row': {
+      bend: 0, bendStack: 1, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 0.5, segmentGap: 0.15,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 1,
+      normalize: 1, fillOpacity: 1, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Donut Ring': {
+      bend: 6.283, bendStack: 1, gridiness: 0, rotation: 0, categoryRotation: 0, segmentWidth: 0.5, segmentGap: 0.15,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 1,
+      normalize: 1, fillOpacity: 1, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Donut Chart': {
+      bend: 0, bendStack: 1, gridiness: 1, rotation: 0, categoryRotation: 0, segmentWidth: 0.5, segmentGap: 0.15,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 1,
+      normalize: 1, fillOpacity: 1, strokeWidth: 0, topWidth: 0, zoom: 1
+    },
+    'Pie Chart': {
+      bend: 0, bendStack: 1, gridiness: 1, rotation: 0, categoryRotation: 0, segmentWidth: 1, segmentGap: 0,
+      flatness: 0, stack: 1, baseline: 0.5, alignment: 0, curviness: 1,
+      normalize: 1, fillOpacity: 0.5, strokeWidth: 1, topWidth: 0, zoom: 1
+    }
+  };
+  
+  return { render, generateData, PRESETS, COLORS, NUM_PRODUCTS };
+})();
+
+
+// ============================================================
+// UI Configuration
+// ============================================================
+
+const SLIDER_CONFIG = [
+  { group: 'Presets', type: 'presets' },
+  { group: 'Data', sliders: [
+    { id: 'numCategories', label: 'months', min: 1, max: 12, step: 1, default: 6, isData: true },
+    { id: 'numProducts', label: 'products', min: 1, max: 5, step: 1, default: 3 },
+    { id: 'focusProduct', label: 'focusProduct', min: 1, max: 5, step: 1, default: 1 },
+    { id: 'normalize', label: 'normalize', min: 0, max: 1, step: 0.01, default: 0 },
+  ]},
+  { group: 'View', sliders: [
+    { id: 'zoom', label: 'zoom', min: 0, max: 2, step: 0.01, default: 1 },
+    { id: 'rotation', label: 'rotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
+    { id: 'categoryRotation', label: 'categoryRotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
+  ]},
+  { group: 'Coordinate', sliders: [
+    { id: 'bend', label: 'bend', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
+    { id: 'bendStack', label: 'bendStack', min: 0, max: 1, step: 0.01, default: 0 },
+    { id: 'gridiness', label: 'gridiness', min: 0, max: 1, step: 0.01, default: 0 },
+  ]},
+  { group: 'Segment', sliders: [
+    { id: 'segmentWidth', label: 'segmentWidth', min: 0.05, max: 1, step: 0.01, default: 0.8 },
+    { id: 'segmentGap', label: 'segmentGap', min: 0, max: 0.5, step: 0.01, default: 0.05 },
+    { id: 'curviness', label: 'curviness', min: 0, max: 1, step: 0.01, default: 1 },
+    { id: 'flatness', label: 'flatness', min: 0, max: 1, step: 0.01, default: 1 },
+  ]},
+  { group: 'Stacking', sliders: [
+    { id: 'stack', label: 'stack', min: 0, max: 1, step: 0.01, default: 1 },
+    { id: 'baseline', label: 'baseline', min: 0, max: 1, step: 0.01, default: 0.5 },
+    { id: 'alignment', label: 'alignment', min: 0, max: 1, step: 0.01, default: 0 },
+  ]},
+  { group: 'Appearance', sliders: [
+    { id: 'fillOpacity', label: 'fillOpacity', min: 0, max: 1, step: 0.01, default: 1 },
+    { id: 'strokeWidth', label: 'strokeWidth', min: 0, max: 5, step: 0.5, default: 0 },
+    { id: 'topWidth', label: 'topWidth', min: 0, max: 5, step: 0.5, default: 0 },
+  ]},
+];
+
+
+// ============================================================
+// Demo Application
+// ============================================================
+
+(function() {
+  let numCategories = 6;
+  let data = OmniChart.generateData(numCategories);
+  let params = { ...OmniChart.PRESETS['Stacked'], focusProduct: 1, numProducts: 3 };
+  let panZoom = { panX: 0, panY: 0 };
+  let isDragging = false;
+  let dragStart = { x: 0, y: 0 };
+  let panStart = { x: 0, y: 0 };
+  
+  const svg = document.getElementById('chart');
+  const container = document.getElementById('chart-container');
+  const controlsEl = document.getElementById('controls');
+  
+  const formatValue = (val, format) => {
+    if (format === 'angle') return (val / Math.PI).toFixed(2) + 'π';
+    if (Number.isInteger(val)) return val;
+    return val.toFixed(2);
+  };
+  
+  const buildControls = () => {
+    for (const group of SLIDER_CONFIG) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'control-group';
+      
+      const h3 = document.createElement('h3');
+      h3.textContent = group.group;
+      groupEl.appendChild(h3);
+      
+      if (group.type === 'presets') {
+        const presetsEl = document.createElement('div');
+        presetsEl.className = 'presets';
+        presetsEl.id = 'presets';
+        
+        for (const name of Object.keys(OmniChart.PRESETS)) {
+          const btn = document.createElement('button');
+          btn.className = 'preset-btn';
+          btn.textContent = name;
+          btn.onclick = () => applyPreset(name);
+          presetsEl.appendChild(btn);
+        }
+        
+        groupEl.appendChild(presetsEl);
+      } else if (group.sliders) {
+        for (const s of group.sliders) {
+          const controlEl = document.createElement('div');
+          controlEl.className = 'control';
+          
+          const label = document.createElement('label');
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = s.label;
+          const valSpan = document.createElement('span');
+          valSpan.id = `${s.id}-val`;
+          
+          const initVal = s.isData 
+            ? numCategories
+            : (params[s.id] ?? s.default);
+          valSpan.textContent = formatValue(initVal, s.format);
+          
+          label.appendChild(nameSpan);
+          label.appendChild(valSpan);
+          
+          const input = document.createElement('input');
+          input.type = 'range';
+          input.id = s.id;
+          input.min = s.min;
+          input.max = s.max;
+          input.step = s.step;
+          input.value = initVal;
+          
+          input.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            valSpan.textContent = formatValue(val, s.format);
+            
+            if (s.isData) {
+              numCategories = val;
+              data = OmniChart.generateData(numCategories);
+            } else {
+              params[s.id] = val;
+            }
+            
+            renderChart();
+            clearActivePreset();
+          });
+          
+          controlEl.appendChild(label);
+          controlEl.appendChild(input);
+          groupEl.appendChild(controlEl);
+        }
+      }
+      
+      controlsEl.appendChild(groupEl);
+    }
+    
+    const hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.innerHTML = 'Drag to pan. Scroll to zoom.<br><b>bend</b>: curves shared baseline<br><b>bendStack</b>: bends each stack into donut<br><b>gridiness</b>: moves centers to grid<br><b>curviness</b>: scales edge bends (0=straight)';
+    controlsEl.appendChild(hint);
+  };
+  
+  const applyPreset = (name) => {
+    const preset = OmniChart.PRESETS[name];
+    if (!preset) return;
+    
+    const startParams = { ...params };
+    const duration = 600;
+    const startTime = performance.now();
+    
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      
+      for (const group of SLIDER_CONFIG) {
+        if (!group.sliders) continue;
+        for (const s of group.sliders) {
+          if (s.isData) continue;
+          if (preset[s.id] === undefined) continue;
+          
+          params[s.id] = startParams[s.id] + (preset[s.id] - startParams[s.id]) * eased;
+          
+          const input = document.getElementById(s.id);
+          const valEl = document.getElementById(`${s.id}-val`);
+          if (input) input.value = params[s.id];
+          if (valEl) valEl.textContent = formatValue(params[s.id], s.format);
+        }
+      }
+      
+      renderChart();
+      
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setActivePreset(name);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  };
+  
+  const setActivePreset = (name) => {
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent === name);
+    });
+  };
+  
+  const clearActivePreset = () => {
+    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+  };
+  
+  container.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    dragStart = { x: e.clientX, y: e.clientY };
+    panStart = { ...panZoom };
+  });
+  
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panZoom.panX = panStart.panX + (e.clientX - dragStart.x);
+    panZoom.panY = panStart.panY + (e.clientY - dragStart.y);
+    renderChart();
+  });
+  
+  window.addEventListener('mouseup', () => isDragging = false);
+  
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    params.zoom = Math.max(0, Math.min(2, params.zoom - e.deltaY * 0.001));
+    const input = document.getElementById('zoom');
+    const valEl = document.getElementById('zoom-val');
+    if (input) input.value = params.zoom;
+    if (valEl) valEl.textContent = formatValue(params.zoom);
+    renderChart();
+  });
+  
+  const renderChart = () => {
+    OmniChart.render(svg, data, params, panZoom);
+  };
+  
+  buildControls();
+  setActivePreset('Stacked Bar');
+  renderChart();
+  
+})();
+</script>
+</body>
+</html>

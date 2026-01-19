@@ -53,7 +53,7 @@ function addBackCircle() {
                 <div class="icon-bar"></div>
             </div>
         `;
-        btn.onclick = () => window.location.href = "/index.html";
+        btn.onclick = () => window.location.href = "https://safercentaurs.com/";
     }
 
     // 4. Append to Body

@@ -15,6 +15,7 @@ This repo contains code developed at [Safer Centaurs](https://www.safercentaurs.
 ├── artifacts/        # Small demos of code that have graduated from the 'spikes'
 │   ├── lcars         # Star Trek inspired UI showing molecular structures
 │   ├── small-sounds  # A DSL for short sound effects
+│   ├── omnichart     # Morphing bar chart / line chart / radial chart
 │   └── ascii-tree    # Make trees for documentation by drag and drop
 └── spikes/           # Rapid prototypes testing new ideas WIP
 ```

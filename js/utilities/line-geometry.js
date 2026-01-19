@@ -83,6 +83,24 @@ class GeometryUtils {
     return B.add(v.scale(lambda));
   }
 
+  static lineIntersection(p1, p2, p3, p4) {
+    const v1 = p2.subtract(p1); // Direction vector of line 1
+    const v2 = p4.subtract(p3); // Direction vector of line 2
+    const v3 = p3.subtract(p1); // Vector from p1 to p3
+
+    const cross = v1.cross(v2);
+    if(Math.abs(cross) < 0.001) return null; // Parallel lines
+
+    const t = v3.cross(v2) / cross;
+    const u = v3.cross(v1) / cross;
+
+    if(t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      return p1.lerp(p2, t);
+    }
+
+    return null;
+  }
+
   /**
    * Calculates the intersection angle between a vector and a line segment.
    * @param {Vector2D} u - The vector.

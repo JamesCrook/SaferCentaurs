@@ -47,39 +47,6 @@
   }
 
   /**
-   * @function drawGrid
-   * @description Draws a grid on the canvas.
-   * @param {object} world - The world object.
-   * @param {object} layer - The layer object.
-   */
-  function drawGrid(world, layer) {
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 1;
-
-    const spacing = layer.spacing || 50;
-    const {
-      tl,
-      br,
-      sz
-    } = r.coords(world, layer);
-    // Vertical lines
-    for(let x = tl.x; x < br.x; x += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, tl.y);
-      ctx.lineTo(x, br.y);
-      ctx.stroke();
-    }
-
-    // Horizontal lines
-    for(let y = tl.y; y < br.y; y += spacing) {
-      ctx.beginPath();
-      ctx.moveTo(tl.x, y);
-      ctx.lineTo(br.x, y);
-      ctx.stroke();
-    }
-  }
-
-  /**
    * @function drawSineWave
    * @description Draws a sine wave on the canvas.
    * @param {object} world - The world object.

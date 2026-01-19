@@ -223,7 +223,7 @@ body {
 
 }
 
-/* Bottom-left overlapped - also extends vertically */
+/* Bottom-left optional - also extends vertically */
 .blpo {
     border-bottom-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
@@ -237,7 +237,7 @@ body {
     margin-right: calc(-1 * var(--lcars-overlap-h));
 }
 
-/* Bottom-right overlapped - also extends vertically */
+/* Bottom-right optional - also extends vertically */
 .brpo {
     border-bottom-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
@@ -251,7 +251,7 @@ body {
     padding-left: calc(1 * var(--lcars-overlap-h));
 }
 
-/* Top-left overlapped - also extends vertically */
+/* Top-left optional - also extends vertically */
 .tlpo {
     border-top-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
@@ -266,7 +266,7 @@ body {
     padding-bottom: 0px;
 }
 
-/* Top-right overlapped - also extends vertically */
+/* Top-right optional - also extends vertically */
 .trpo {
     border-top-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));

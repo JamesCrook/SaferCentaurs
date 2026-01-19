@@ -280,6 +280,10 @@ const canvasUiFactory = function(name) {
     // Registry line connects it to controllers
     Registry.set('world', contents);
     DataModel.init(contents)
+    if(contents.width)
+      state.canvas.width = contents.width;
+    if(contents.height)
+      state.canvas.height = contents.height;
     thisCanvas.drawWithWaiting();
   }
 

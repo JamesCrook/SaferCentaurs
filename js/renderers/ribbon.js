@@ -392,12 +392,7 @@ class Ribbon {
     }
   }
 
-  // These are (probably) broken methods to capture SVG information
-
   toSVGPathString() {
-    // This is now broken as getCanvasPath is removed.
-    // Needs to be reimplemented if SVG output is required.
-    // proposed implementation below:
     let ctx = new SvgPseudoCtx();
     let oldCtx = this.ctx;
     this.setCtx(ctx);

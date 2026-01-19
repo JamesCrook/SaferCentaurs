@@ -46,6 +46,9 @@ class Vector2D {
   _dot(v) {
     return this.x * v.x + this.y * v.y;
   }
+  _cross(v) {
+    return this.x * v.y - this.y * v.x;
+  }
 
   /**
    * getVec is a helper function. If y is undefined, then return x
@@ -101,7 +104,9 @@ class Vector2D {
   dot(x, y) {
     return this._dot(this.getVec(x, y));
   };
-
+  cross(x, y) {
+    return this._cross(this.getVec(x, y));
+  };
   /**
    * occasionally useful synonym...
    * @param {Vector2D|number} x - The vector to subtract, or the x-component.
@@ -156,8 +161,9 @@ class Vector2D {
       this.y + (other.y - this.y) * t
     );
   }
-  equals(other) {
-    return (this.x == other.x) && (this.y == other.y);
+  equals(other, epsilon = 0.001) {
+    return Math.abs(this.x - other.x) < epsilon && Math.abs(this.y - other
+      .y) < epsilon;
   }
 
   /**

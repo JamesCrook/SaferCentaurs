@@ -34,10 +34,11 @@
     if(style?.features?.flowtext === false)
       return;
     const mottoText = style.mottoText || "Per Ardua Ad Astra";
-    const font = layer.font || "24px serif";
+    const font = layer.font || "48px serif";
     const nodes = world.nodes.filter(n => layer.nodes.includes(n.id));
     const path = new RibbonPath().withNodes(nodes).build();
     const pathLength = path.getLength();
+    const displace = style.displace ?? 0;
 
     ctx.save();
     ctx.font = font;
@@ -59,12 +60,13 @@
 
       const {
         point,
-        tangent
+        tangent,
+        normal
       } = path.sampleAtDistance(distance);
-      if(!point || !tangent) continue;
-
+      if(!point || !tangent || !normal) continue;
+      let v = point.add(normal.scale(displace));
       ctx.save();
-      ctx.translate(point.x, point.y);
+      ctx.translate(v.x, v.y);
       ctx.rotate(tangent.angle);
       ctx.fillText(char, 0, 0);
       ctx.restore();

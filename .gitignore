@@ -1,9 +1,9 @@
-#ignore obsidian files
-*.obsidian
+#ignore index
+*.DS_Store
 #Ignore thumbnails created by Windows
 Thumbs.db
-#Ignore index made by macOS
-.DS_Store
+#Editors etc
+.obsidian/
 #Ignore files built by Visual Studio
 *.obj
 *.exe
@@ -31,5 +31,14 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 .vs/
+.idea/
 #Nuget packages folder
 packages/
+#Python
+__pycache__
+# Node modules
+node_modules/
+
+# Local virtual environment
+playwright-tests/venv/
+test-results/

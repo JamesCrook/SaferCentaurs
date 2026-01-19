@@ -25,10 +25,10 @@ const panelUiFactory = function(name, configIn) {
     return pan
   }
 
-  function addWidget(prefix, control) {
+  function addWidget(prefix, control, uniquifier) {
     if(!state.panel)
       return;
-    const controlElement = Widgets.createControl(prefix, control);
+    const controlElement = Widgets.createControl(prefix, control, uniquifier);
     state.panel.appendChild(controlElement);
   }
 
@@ -56,11 +56,25 @@ const panelUiFactory = function(name, configIn) {
     }
 
     const prefix = (config?.id || 'no-id');
-    config.controls.forEach(control => {
-      addWidget(prefix, control);
-    });
+    let ix = -1;
+    for(const control of config.controls) {
+      ix += 1;
+      addWidget(prefix, control, name + ix);
+    }
+
+    if(config.width)
+      state.panel.width = config.width;
+    if(config.height)
+      state.panel.height = config.height;
 
     document.getElementById(name)?.replaceWith(state.panel);
+
+    for(const child of state.panel.children) {
+      if(child.initialize) {
+        child.initialize();
+      }
+    }
+
     return state.panel;
   }
 

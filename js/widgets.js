@@ -18,11 +18,11 @@ const Widgets = (() => {
    * @param {object} control - The configuration object for the control.
    * @returns {HTMLElement} The created control element.
    */
-  function createControl(prefix, control) {
+  function createControl(prefix, control, uniquifier) {
     let type = control.type;
     let entry = widgets[type];
     if(entry != undefined) {
-      return entry.widgetCreate(prefix, control);
+      return entry.widgetCreate(prefix, control, uniquifier);
     } else {
       console.error(`Unsupported control type: ${control.type}`);
       return document.createElement('div');

@@ -142,9 +142,7 @@
       letter-spacing: 0.5px;
       cursor: pointer;
       transition: all 0.2s;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      transform: rotate(180deg);
+      writing-mode: vertical-lr;
     }
     
     /* When showing full names, buttons size to their content */
@@ -292,7 +290,8 @@
         width: 100%;
         aspect-ratio: 800 / 650;
         min-height: 0;
-        max-height: none;
+        /* Ensure minimum 210px for controls: header 30px + controls 210px + gaps 26px */
+        max-height: calc(100vh - 266px);
       }
       
       .controls-wrapper {
@@ -1070,7 +1069,8 @@ const SLIDER_CONFIG = [
       btn.dataset.abbrev = group.abbrev || group.group.slice(0, 3);
       btn.dataset.full = group.group;
       btn.dataset.sectionId = group.id;
-      btn.textContent = btn.dataset.abbrev; // Start with abbrev, updateStripButtonText will fix
+      btn.textContent = btn.dataset.abbrev;
+      
       btn.addEventListener('click', () => {
         if (btn.classList.contains('inactive')) return;
         const target = document.getElementById(btn.dataset.target);

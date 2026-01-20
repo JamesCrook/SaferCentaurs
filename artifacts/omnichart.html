@@ -8,67 +8,228 @@
   <script src="../js/utilities/nav.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body { 
       font-family: system-ui, -apple-system, sans-serif;
       background: #1a1a2e;
       color: #eee;
       min-height: 100vh;
-      padding: 20px;
       overflow: hidden;
     }
-    h1 { text-align: center; margin-bottom: 10px; color: #fff; }
-    .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 14px; }
     
-    .layout {
+    /* Header */
+    .header {
+      height: 30px;
       display: flex;
-      gap: 20px;
-      max-width: 1600px;
-      margin: 0 auto;
-      height: calc(100vh - 100px);
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 0 10px;
     }
     
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+    
+    .subtitle {
+      display: none;
+    }
+    
+    .header-right {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .legend-toggle {
+      background: #16213e;
+      border: none;
+      color: #555;
+      font-size: 12px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s;
+      filter: grayscale(1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .legend-toggle:hover {
+      background: #1e2a4a;
+    }
+    
+    .legend-toggle.active {
+      background: #3a3a4a;
+      color: #888;
+    }
+    
+    /* Main Layout */
+    .layout {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+      padding: 10px;
+      height: calc(100vh - 30px);
+    }
+    
+    /* Chart Container */
     .chart-container {
       flex: 1;
       background: #16213e;
       border-radius: 12px;
-      padding: 10px;
+      padding: 5px;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: center;
       overflow: hidden;
       cursor: grab;
+      min-width: 0;
     }
     
     .chart-container:active { cursor: grabbing; }
-    .chart-container svg { background: #0f0f23; border-radius: 8px; }
     
-    .controls {
-      width: 300px;
-      background: #16213e;
-      border-radius: 12px;
-      padding: 15px;
-      overflow-y: auto;
-      flex-shrink: 0;
+    .chart-container svg {
+      background: #0f0f23;
+      border-radius: 8px;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
     }
     
-    .control-group { margin-bottom: 16px; }
+    /* Controls Wrapper */
+    .controls-wrapper {
+      display: flex;
+      width: 320px;
+      flex-shrink: 0;
+      min-height: 0;
+    }
+    
+    /* Multiscroller Strip */
+    .multiscroller-strip {
+      width: 32px;
+      flex-shrink: 0;
+      background: #16213e;
+      border-radius: 12px 0 0 12px;
+      display: flex;
+      flex-direction: column;
+      padding: 4px 0;
+    }
+    
+    /* Center content-sized buttons when using full names */
+    .multiscroller-strip.full-names {
+      justify-content: flex-start;
+    }
+    
+    .strip-btn {
+      flex: 1;
+      min-height: 30px;
+      max-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+    }
+    
+    /* When showing full names, buttons size to their content */
+    .multiscroller-strip.full-names .strip-btn {
+      flex: 0 0 auto;
+      min-height: 0;
+      max-height: none;
+      padding: 6px 0;
+    }
+    
+    .strip-btn:hover {
+      color: #4fc3f7;
+      background: rgba(79, 195, 247, 0.1);
+    }
+    
+    /* Button won't do anything - section already visible/at-top */
+    .strip-btn.inactive {
+      color: #3a3a4a;
+    }
+
+    .strip-btn.active {
+      color: #4fc3f7;
+      background: rgba(79, 195, 247, 0.15);
+    }
+    
+    .strip-btn.inactive:hover {
+      color: #3a3a4a;
+      background: transparent;
+    }
+    
+    /* When multiscroller is unlocked (legend hidden), show grab cursor */
+    .multiscroller-unlocked .strip-btn {
+      cursor: grab;
+    }
+    
+    .multiscroller-unlocked .strip-btn:active {
+      cursor: grabbing;
+    }
+    
+    /* Controls Panel */
+    .controls {
+      position: relative;
+      flex: 1;
+      background: #16213e;
+      border-radius: 0 12px 12px 0;
+      padding: 12px 12px 12px 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .controls::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .controls::-webkit-scrollbar-track {
+      background: #0f0f23;
+      border-radius: 3px;
+    }
+    
+    .controls::-webkit-scrollbar-thumb {
+      background: #4fc3f7;
+      border-radius: 3px;
+    }
+    
+    .control-group { 
+      margin-bottom: 14px;
+      scroll-margin-top: 4px;
+    }
     
     .control-group h3 {
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
       color: #666;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: 1px;
     }
     
-    .control { margin-bottom: 10px; }
-    .control label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
-    .control label span:last-child { color: #4fc3f7; font-family: monospace; font-size: 11px; }
+    .control { margin-bottom: 8px; }
+    .control label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px; }
+    .control label span:last-child { color: #4fc3f7; font-family: monospace; font-size: 10px; }
     
     input[type="range"] {
       width: 100%;
-      height: 5px;
-      border-radius: 3px;
+      height: 4px;
+      border-radius: 2px;
       background: #0f0f23;
       outline: none;
       -webkit-appearance: none;
@@ -76,40 +237,170 @@
     
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background: #4fc3f7;
       cursor: pointer;
     }
     
-    .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .presets { display: flex; flex-wrap: wrap; gap: 4px; }
     
     .preset-btn {
-      padding: 5px 10px;
+      padding: 4px 8px;
       border: 1px solid #4fc3f7;
       background: transparent;
       color: #4fc3f7;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 10px;
       transition: all 0.2s;
     }
     
     .preset-btn:hover, .preset-btn.active { background: #4fc3f7; color: #1a1a2e; }
     
-    .hint { font-size: 10px; color: #555; margin-top: 10px; line-height: 1.4; }
+    /* Hint text - large screens only */
+    .hint {
+      display: none;
+      font-size: 11px;
+      color: #555;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    
+    @media (min-width: 1000px) {
+      .hint {
+        display: block;
+      }
+    }
+    
+    /* Legend (inside SVG, controlled by toggle) */
+    .legend-hidden .chart-legend { display: none; }
+    
+    /* ============================================
+       RESPONSIVE: Portrait mobile (≤800px width)
+       ============================================ */
+    @media (max-width: 800px) and (orientation: portrait) {
+      .layout {
+        flex-direction: column;
+        gap: 10px;
+        padding: 8px;
+      }
+      
+      .chart-container {
+        flex: 0 0 auto;
+        width: 100%;
+        aspect-ratio: 800 / 650;
+        min-height: 0;
+        max-height: none;
+      }
+      
+      .controls-wrapper {
+        width: 100%;
+        flex: 1;
+        min-height: 210px;
+        max-height: none;
+      }
+      
+      .multiscroller-strip {
+        border-radius: 12px 0 0 12px;
+      }
+      
+      .controls {
+        border-radius: 0 12px 12px 0;
+      }
+    }
+    
+    /* Landscape or wider screens - use grid so controls extend full height */
+    @media (min-width: 801px), (orientation: landscape) {
+      body {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        grid-template-rows: auto 1fr;
+        height: 100vh;
+        gap: 0 10px;
+        padding: 10px;
+      }
+      
+      .header {
+        grid-column: 1;
+        grid-row: 1;
+        height: auto;
+      }
+      
+      .layout {
+        display: contents;
+      }
+      
+      .chart-container {
+        grid-column: 1;
+        grid-row: 2;
+        flex: unset;
+        min-height: 0;
+      }
+      
+      .controls-wrapper {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        width: auto;
+        height: 100%;
+      }
+    }
+    
+    /* Large landscape - taller header */
+    @media (min-width: 1000px) {
+      .header {
+        flex-direction: column;
+        padding: 10px;
+      }
+      
+      .header h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+      }
+      
+      .subtitle {
+        display: block;
+        color: #888;
+        font-size: 14px;
+        text-align: center;
+      }
+      
+      .header-right {
+        top: 10px;
+        transform: none;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-height: 500px) {
+      .controls-wrapper {
+        min-height: 150px;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>OmniChart</h1>
-  <p class="subtitle">One engine, all charts. Drag to pan, scroll to zoom, use sliders to morph.</p>
+  <header class="header">
+    <h1>OmniChart</h1>
+    <p class="subtitle">One engine, all charts. Drag to pan, scroll to zoom, use sliders to morph.</p>
+    <div class="header-right">
+      <button class="legend-toggle active" id="legend-toggle">🗝</button>
+    </div>
+  </header>
   
   <div class="layout">
     <div class="chart-container" id="chart-container">
-      <svg id="chart" width="800" height="650"></svg>
+      <svg id="chart" viewBox="0 0 800 650" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
-    <div class="controls" id="controls"></div>
+    <div class="controls-wrapper">
+      <div class="multiscroller-strip" id="multiscroller">
+        <!-- Buttons generated by JS -->
+      </div>
+      <div class="controls" id="controls">
+        <!-- Controls generated by JS -->
+      </div>
+    </div>
   </div>
 
 <script>
@@ -144,13 +435,9 @@ const lerp = (a, b, t) => a + (b - a) * t;
 
 // ============================================================
 // WarpedPolygon - Unified quadrilateral with bend-based arc edges
-// Inspired by quad-spike's approach: bend=0 straight, bend=π half-circle
 // ============================================================
 
 const WarpedPolygon = {
-  // Generate SVG path for a warped polygon
-  // corners: array of 4 corner points [{x, y}, ...]
-  // bends: array of 4 bend values (radians), bend=0 straight, bend=π half-circle
   path(corners, bends) {
     let d = `M ${corners[0].x} ${corners[0].y}`;
     for (let i = 0; i < 4; i++) {
@@ -159,40 +446,28 @@ const WarpedPolygon = {
     return d + ' Z';
   },
   
-  // Generate path for just the top edge (corners[2] to corners[3])
   topPath(corners, bends) {
     const p1 = corners[2], p2 = corners[3];
     return `M ${p1.x} ${p1.y}` + this._edge(p1, p2, bends[2]);
   },
   
-  // Calculate arc parameters from bend value (based on quad-spike approach)
-  // bend = arc angle subtended: 0 = straight, π = semicircle, 2π = full circle
-  // positive bend = arc bulges left (counterclockwise), negative = right (clockwise)
   _getArcParams(p1, p2, bend) {
     const chord = V.sub(p2, p1);
     const chordLength = Math.hypot(chord.x, chord.y);
     const midpoint = V.mid(p1, p2);
     
-    // Radius from chord length and arc angle: chord = 2 * r * sin(|bend|/2)
     const halfBend = Math.abs(bend) / 2;
     const sinHalf = Math.sin(halfBend);
-    if (sinHalf < 0.0001) return null; // nearly straight
+    if (sinHalf < 0.0001) return null;
     
     const radius = chordLength / (2 * sinHalf);
-    
-    // Distance from midpoint to center along perpendicular
     const distToCenter = radius * Math.cos(halfBend);
-    
-    // Perpendicular direction (sign of bend determines side)
     const perp = V.normalize(V.perp(chord));
     const sign = bend > 0 ? 1 : -1;
     const center = V.add(midpoint, V.scale(perp, -sign * distToCenter));
     
-    // Calculate start and end angles from center
     const startAngle = Math.atan2(p1.y - center.y, p1.x - center.x);
     const endAngle = Math.atan2(p2.y - center.y, p2.x - center.x);
-    
-    // Counterclockwise if positive bend
     const counterclockwise = bend > 0;
     
     return { center, radius, startAngle, endAngle, counterclockwise };
@@ -202,7 +477,6 @@ const WarpedPolygon = {
     const chord = V.dist(p1, p2);
     if (chord < 0.001) return '';
     
-    // If bend is near zero, draw straight line
     if (!bend || Math.abs(bend) < 0.01) {
       return ` L ${p2.x} ${p2.y}`;
     }
@@ -214,12 +488,10 @@ const WarpedPolygon = {
     
     const { radius, counterclockwise, startAngle, endAngle } = arcParams;
     
-    // Check if radius is too large (nearly straight)
     if (radius > chord * 100) {
       return ` L ${p2.x} ${p2.y}`;
     }
     
-    // Calculate angular difference to determine large arc flag
     let angleDiff = endAngle - startAngle;
     if (counterclockwise) {
       if (angleDiff < 0) angleDiff += Math.PI * 2;
@@ -274,8 +546,6 @@ const OmniChart = (function() {
     return order;
   };
   
-  // ---- Segment Calculation ----
-  
   const calcAllSegments = (data, params) => {
     const { stack, normalize, focusProduct, numProducts } = params;
     const numCats = data.labels.length;
@@ -315,11 +585,6 @@ const OmniChart = (function() {
     return result;
   };
   
-  // ---- Unified Geometry Calculation with Bend-based edges ----
-  // bend: 0 = straight shared baseline, 2π = circular shared baseline
-  // bendStack: 0 = straight vertical stacks, 1 = circular stacks (donuts)
-  // gridiness: 0 = stack centers on shared baseline, 1 = stack centers in grid
-  
   const calcUnifiedGeometry = (allSegs, data, params, bounds, panZoom) => {
     const { bend, bendStack, gridiness, rotation, categoryRotation, segmentWidth, segmentGap, baseline, alignment, zoom, flatness } = params;
     const numCats = data.labels.length;
@@ -334,24 +599,20 @@ const OmniChart = (function() {
     const chartW = bounds.width * scale;
     const chartH = bounds.height * scale;
     
-    // === Grid layout (gridiness = 1) ===
     const cols = Math.ceil(Math.sqrt(numCats * 1.5));
     const rows = Math.ceil(numCats / cols);
     const cellW = chartW / cols;
     const cellH = chartH / rows;
     const gridTopLeft = V.create(chartCenter.x - cellW * cols / 2, chartCenter.y - cellH * rows / 2);
     
-    // === Bar layout (bend = 0, bendStack = 0) ===
     const barTopLeft = V.create(chartCenter.x - chartW / 2, chartCenter.y - chartH / 2);
     const bandW = chartW / numCats;
     const barW = bandW * Math.max(0.001, segmentWidth) * (1 - segmentGap);
     
-    // === Radial layout parameters ===
     const radialMaxR = Math.min(chartW, chartH) / 2 * 0.85;
     const radialRange = chartH;
     const radialMinR = chartH / 2;
     
-    // === Donut layout (bendStack = 1) ===
     const donutR = Math.min(bandW, chartH) * 0.4;
     const pieR = Math.min(cellW, cellH) * 0.38;
     const donutInnerRatio = 1 - Math.max(0.05, segmentWidth);
@@ -360,9 +621,6 @@ const OmniChart = (function() {
     const baselineArcR = Math.min(chartW, chartH) / 2 * 0.5;
     const bendBlend = Math.min(1, bend / (Math.PI * 2));
     
-    // The bend value for horizontal edges (baseline and top) when bend > 0
-    // At bend = 2π, we want a full circle, so the edge bend should be 2π/numCats
-    // But we need to account for the segment width and gaps
     const effBend = Math.max(bend, 0.0001);
     const fullSliceAngle = effBend / numCats;
     const sliceAngle = fullSliceAngle * segmentWidth * (1 - segmentGap);
@@ -370,22 +628,16 @@ const OmniChart = (function() {
     for (let i = 0; i < numCats; i++) {
       const alignShift = alignment * (globalMax - maxHeights[i]);
       
-      // === Category center positions ===
-      
-      // Bar position (bend=0, on horizontal line), then rotated
       const barCatX = barTopLeft.x + (i + 0.5) * bandW;
       const barCatPosUnrotated = V.create(barCatX, chartCenter.y);
       const barCatPos = V.rotate(barCatPosUnrotated, chartCenter, categoryRotation);
       
-      // Category angle for radial layout
       const catBaseAngle = -Math.PI / 2 + rotation + categoryRotation;
       const catAngle = catBaseAngle - (effBend / 2) + (i + 0.5) * fullSliceAngle;
       const radialCatPos = V.addPolar(chartCenter, baselineArcR, catAngle);
       
-      // Baseline position = lerp by bend
       const baselineCatPos = V.lerp(barCatPos, radialCatPos, bendBlend);
       
-      // Grid position
       const col = i % cols;
       const row = Math.floor(i / cols);
       const gridCatPos = V.create(
@@ -393,28 +645,22 @@ const OmniChart = (function() {
         gridTopLeft.y + (row + 0.5) * cellH
       );
       
-      // Category center (for donut mode)
       const catCenter = V.lerp(baselineCatPos, gridCatPos, gridiness);
       
-      // Donut radius interpolates between baseline size and grid size
       const currentDonutR = lerp(donutR, pieR, gridiness);
       const currentDonutInnerR = currentDonutR * donutInnerRatio;
       
-      // === Process segments ===
       for (const seg of allSegs[i]) {
         const next = allSegs[(i + 1)%numCats]?.find(s => s.origIdx === seg.origIdx);
         
-        // Flatness blending for lines between categories
         const y1L = seg.y1;
         const y0L = seg.y0;
         const y1R = lerp(next ? next.y1 : seg.y1, seg.y1, flatness);
         const y0R = lerp(next ? next.y0 : seg.y0, seg.y0, flatness);
         
-        // ============ Calculate shared baseline corners ============
         const toYBar = v => barTopLeft.y + chartH * (1 - (v + alignShift - baseline + 0.5));
         const halfBarW = barW / 2;
         
-        // For bend > 0: corners are placed on arcs
         const baselineSpineR = (radialMinR + (baseline - 0.5) * radialRange) * 0.5;
         const bendAngularSpan = bend;
         const barBaselineLength = chartW;
@@ -445,9 +691,6 @@ const OmniChart = (function() {
         const r0R = bendSpineR + h0R;
         const r1R = bendSpineR + h1R;
         
-        // Shared baseline corners (using polar for bent, cartesian for straight)
-        // Ensuring these match up was tricky, and it could make sense to instead
-        // use some imperceptible bend always
         const sharedCorners = bend < 0.001 ? [
           V.rotate(V.create(barCatX - halfBarW, toYBar(y0L)), chartCenter, rotation + categoryRotation),
           V.rotate(V.create(barCatX + halfBarW, toYBar(y0R)), chartCenter, rotation + categoryRotation),
@@ -460,7 +703,6 @@ const OmniChart = (function() {
           V.addPolar(rotatedBendArcCenter, r1L, bendAStart)
         ];
         
-        // ============ Calculate donut corners ============
         const donutSpineR = (currentDonutR + currentDonutInnerR) / 2;
         const donutHalfThick = (currentDonutR - currentDonutInnerR) / 2;
         
@@ -497,35 +739,18 @@ const OmniChart = (function() {
           V.addPolar(localArcCenter, outerR, theta1)
         ];
         
-        // ============ Final corners (blend shared↔donut by bendStack) ============
         const corners = sharedCorners.map((sc, idx) => V.lerp(sc, donutCorners[idx], bendStack));
         
-        // Skip degenerate segments
         if (V.dist(corners[0], corners[1]) < 0.5 && V.dist(corners[2], corners[3]) < 0.5) continue;
         
-        // ============ Calculate bend values for each edge ============
-        // Edge indices: 0 = bottom (0→1), 1 = right (1→2), 2 = top (2→3), 3 = left (3→0)
-        // 
-        // For bend parameter (shared baseline curving):
-        //   - Edges 0 and 2 (horizontal) should curve with bend
-        //   - Bend sign: positive = arc bulges outward from center
-        //
-        // For bendStack parameter (donut formation):
-        //   - Edges 1 and 3 (vertical/radial) should curve with bendStack
-        //
-        // The key insight: bend value = angular span of that edge
-        
-        // Horizontal edges: angular span from bend parameter
         const edgeBendH = bendSliceAngle;
-        
-        // Vertical edges: angular span from bendStack parameter
         const stackAngularSpan = (v1 - v0) * -targetAngularSpan;
         
         const bends = [
-          -edgeBendH,        // 0: bottom edge bulges inward (toward arc center)
-          stackAngularSpan,  // 1: inner edge
-          edgeBendH,         // 2: top edge bulges outward (away from arc center)
-          -stackAngularSpan  // 3: outer edge
+          -edgeBendH,
+          stackAngularSpan,
+          edgeBendH,
+          -stackAngularSpan
         ];
         
         geometries.push({
@@ -536,7 +761,6 @@ const OmniChart = (function() {
         });
       }
       
-      // ============ Label ============
       const barLabelPos = V.rotate(V.create(barCatX, barTopLeft.y + chartH + 20), chartCenter, rotation + categoryRotation);
       const radialLabelPos = V.addPolar(chartCenter, radialMaxR + 15, catAngle);
       const sharedLabelPos = V.lerp(barLabelPos, radialLabelPos, bendBlend);
@@ -556,8 +780,6 @@ const OmniChart = (function() {
     
     return geometries;
   };
-  
-  // ---- Rendering ----
   
   const renderGeometries = (group, geoms, params) => {
     const { fillOpacity, strokeWidth, topWidth } = params;
@@ -617,11 +839,10 @@ const OmniChart = (function() {
     }
   };
   
-  // ---- Main Render ----
-  
-  const render = (svg, data, params, panZoom = { panX: 0, panY: 0 }) => {
-    const width = parseInt(svg.getAttribute('width'));
-    const height = parseInt(svg.getAttribute('height'));
+  const render = (svg, data, params, panZoom = { panX: 0, panY: 0 }, showLegend = true) => {
+    const viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+    const width = viewBox[2];
+    const height = viewBox[3];
     
     svg.innerHTML = '';
     
@@ -633,30 +854,58 @@ const OmniChart = (function() {
     renderGeometries(mainGroup, geoms, params);
     
     svg.appendChild(mainGroup);
-    renderLegend(svg, data.series, params.focusProduct, params.numProducts);
+    
+    if (showLegend) {
+      renderLegend(svg, data.series, params.focusProduct, params.numProducts);
+    }
   };
   
   const renderLegend = (svg, series, focusProduct, numProducts) => {
     const drawOrder = getDrawOrder(focusProduct, numProducts);
     const legendGroup = createElement('g');
-    legendGroup.setAttribute('transform', 'translate(15, 15)');
+    legendGroup.classList.add('chart-legend');
+    
+    // Legend sizing (scaled up for visibility when chart shrinks)
+    const itemHeight = 28;
+    const iconSize = 14;
+    const fontSize = 14;
+    const paddingX = 12;
+    const paddingY = 10;
+    const legendWidth = 100;
+    const legendHeight = drawOrder.length * itemHeight + paddingY * 2;
+    
+    // Position at top-right
+    const legendX = 800 - legendWidth - 15;
+    const legendY = 15;
+    legendGroup.setAttribute('transform', `translate(${legendX}, ${legendY})`);
+    
+    // Translucent background
+    const bg = createElement('rect');
+    bg.setAttribute('x', -paddingX);
+    bg.setAttribute('y', -paddingY);
+    bg.setAttribute('width', legendWidth + paddingX);
+    bg.setAttribute('height', legendHeight);
+    bg.setAttribute('fill', '#0f0f23');
+    bg.setAttribute('fill-opacity', '0.75');
+    bg.setAttribute('rx', 6);
+    legendGroup.appendChild(bg);
     
     for (let p = 0; p < drawOrder.length; p++) {
       const origIdx = drawOrder[p];
       const g = createElement('g');
-      g.setAttribute('transform', `translate(0, ${p * 18})`);
+      g.setAttribute('transform', `translate(0, ${p * itemHeight})`);
       
       const rect = createElement('rect');
-      rect.setAttribute('width', 10);
-      rect.setAttribute('height', 10);
+      rect.setAttribute('width', iconSize);
+      rect.setAttribute('height', iconSize);
       rect.setAttribute('fill', COLORS[origIdx % COLORS.length]);
-      rect.setAttribute('rx', 2);
+      rect.setAttribute('rx', 3);
       
       const text = createElement('text');
-      text.setAttribute('x', 15);
-      text.setAttribute('y', 9);
-      text.setAttribute('fill', '#888');
-      text.setAttribute('font-size', '10px');
+      text.setAttribute('x', iconSize + 8);
+      text.setAttribute('y', iconSize - 2);
+      text.setAttribute('fill', '#aaa');
+      text.setAttribute('font-size', `${fontSize}px`);
       text.textContent = series[origIdx].name;
       
       g.appendChild(rect);
@@ -666,8 +915,6 @@ const OmniChart = (function() {
     
     svg.appendChild(legendGroup);
   };
-  
-  // ---- Presets ----
   
   const PRESETS = {
     'Stacked': {
@@ -746,35 +993,35 @@ const OmniChart = (function() {
 // ============================================================
 
 const SLIDER_CONFIG = [
-  { group: 'Presets', type: 'presets' },
-  { group: 'Data', sliders: [
+  { group: 'Presets', id: 'presets', abbrev: 'Pre', type: 'presets' },
+  { group: 'Data', id: 'data', abbrev: 'Dat', sliders: [
     { id: 'numCategories', label: 'months', min: 1, max: 12, step: 1, default: 6, isData: true },
     { id: 'numProducts', label: 'products', min: 1, max: 5, step: 1, default: 3 },
     { id: 'focusProduct', label: 'focusProduct', min: 1, max: 5, step: 1, default: 1 },
     { id: 'normalize', label: 'normalize', min: 0, max: 1, step: 0.01, default: 0 },
   ]},
-  { group: 'View', sliders: [
+  { group: 'View', id: 'view', abbrev: 'Vie', sliders: [
     { id: 'zoom', label: 'zoom', min: 0, max: 2, step: 0.01, default: 1 },
     { id: 'rotation', label: 'rotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
     { id: 'categoryRotation', label: 'categoryRotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
   ]},
-  { group: 'Coordinate', sliders: [
+  { group: 'Coordinate', id: 'coord', abbrev: 'Coo', sliders: [
     { id: 'bend', label: 'bend', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
     { id: 'bendStack', label: 'bendStack', min: 0, max: 1, step: 0.01, default: 0 },
     { id: 'gridiness', label: 'gridiness', min: 0, max: 1, step: 0.01, default: 0 },
   ]},
-  { group: 'Segment', sliders: [
+  { group: 'Segment', id: 'segment', abbrev: 'Seg', sliders: [
     { id: 'segmentWidth', label: 'segmentWidth', min: 0.05, max: 1, step: 0.01, default: 0.8 },
     { id: 'segmentGap', label: 'segmentGap', min: 0, max: 0.5, step: 0.01, default: 0.05 },
     { id: 'curviness', label: 'curviness', min: 0, max: 1, step: 0.01, default: 1 },
     { id: 'flatness', label: 'flatness', min: 0, max: 1, step: 0.01, default: 1 },
   ]},
-  { group: 'Stacking', sliders: [
+  { group: 'Stacking', id: 'stacking', abbrev: 'Sta', sliders: [
     { id: 'stack', label: 'stack', min: 0, max: 1, step: 0.01, default: 1 },
     { id: 'baseline', label: 'baseline', min: 0, max: 1, step: 0.01, default: 0.5 },
     { id: 'alignment', label: 'alignment', min: 0, max: 1, step: 0.01, default: 0 },
   ]},
-  { group: 'Appearance', sliders: [
+  { group: 'Appearance', id: 'appearance', abbrev: 'App', sliders: [
     { id: 'fillOpacity', label: 'fillOpacity', min: 0, max: 1, step: 0.01, default: 1 },
     { id: 'strokeWidth', label: 'strokeWidth', min: 0, max: 5, step: 0.5, default: 0 },
     { id: 'topWidth', label: 'topWidth', min: 0, max: 5, step: 0.5, default: 0 },
@@ -794,10 +1041,16 @@ const SLIDER_CONFIG = [
   let isDragging = false;
   let dragStart = { x: 0, y: 0 };
   let panStart = { x: 0, y: 0 };
+  let showLegend = true;
   
   const svg = document.getElementById('chart');
   const container = document.getElementById('chart-container');
   const controlsEl = document.getElementById('controls');
+  const multiscrollerEl = document.getElementById('multiscroller');
+  const legendToggle = document.getElementById('legend-toggle');
+  
+  // Touch detection
+  const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   
   const formatValue = (val, format) => {
     if (format === 'angle') return (val / Math.PI).toFixed(2) + 'π';
@@ -805,10 +1058,197 @@ const SLIDER_CONFIG = [
     return val.toFixed(2);
   };
   
+  // Track explicitly clicked section (shared between buildMultiscroller and setupScrollTracking)
+  let clickedSectionId = null;
+  
+  // Build multiscroller buttons
+  const buildMultiscroller = () => {
+    for (const group of SLIDER_CONFIG) {
+      const btn = document.createElement('button');
+      btn.className = 'strip-btn';
+      btn.dataset.target = `section-${group.id}`;
+      btn.dataset.abbrev = group.abbrev || group.group.slice(0, 3);
+      btn.dataset.full = group.group;
+      btn.dataset.sectionId = group.id;
+      btn.textContent = btn.dataset.abbrev; // Start with abbrev, updateStripButtonText will fix
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('inactive')) return;
+        const target = document.getElementById(btn.dataset.target);
+        if (target) {
+          clickedSectionId = group.id;
+          updateActiveStripButton(group.id);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      multiscrollerEl.appendChild(btn);
+    }
+    updateStripButtonText();
+    window.addEventListener('resize', updateStripButtonText);
+  };
+  
+  // Update strip button text based on available height
+  const updateStripButtonText = () => {
+    const buttons = multiscrollerEl.querySelectorAll('.strip-btn');
+    const stripHeight = multiscrollerEl.clientHeight;
+    
+    // Each character is roughly 9px in vertical writing mode, plus padding per button
+    const charHeight = 9;
+    const paddingPerButton = 12;
+    
+    // Sum actual height needed for each button's full text
+    const neededTotal = SLIDER_CONFIG.reduce((sum, g) => {
+      return sum + (g.group.length * charHeight) + paddingPerButton;
+    }, 0);
+    
+    const useFull = stripHeight >= neededTotal;
+    
+    multiscrollerEl.classList.toggle('full-names', useFull);
+    buttons.forEach(btn => {
+      btn.textContent = useFull ? btn.dataset.full : btn.dataset.abbrev;
+    });
+  };
+  
+  const updateActiveStripButton = (activeId) => {
+    document.querySelectorAll('.strip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.target === `section-${activeId}`);
+    });
+  };
+  
+  // Track scroll position to highlight active section and mark inactive buttons
+  const setupScrollTracking = () => {
+    const updateButtonStates = () => {
+      const scrollTop = controlsEl.scrollTop;
+      const panelHeight = controlsEl.clientHeight;
+      const scrollBottom = scrollTop + panelHeight;
+      const maxScroll = controlsEl.scrollHeight - panelHeight;
+      const hasScroll = maxScroll > 5;
+      const isAtBottom = hasScroll && scrollTop >= maxScroll - 1;
+      
+      const buttons = multiscrollerEl.querySelectorAll('.strip-btn');
+      let computedActiveSection = SLIDER_CONFIG[0].id;
+      
+      buttons.forEach((btn, i) => {
+        const section = document.getElementById(`section-${SLIDER_CONFIG[i].id}`);
+        if (!section) return;
+        
+        const sectionTop = section.offsetTop;
+        const sectionBottom = sectionTop + section.offsetHeight;
+        
+        // Track which section would be active based on scroll position
+        if (sectionTop <= scrollTop + 20) {
+          computedActiveSection = SLIDER_CONFIG[i].id;
+        }
+        
+        // Inactive if: at bottom and section is fully visible
+        const fullyVisible = sectionTop >= scrollTop - 1 && sectionBottom <= scrollBottom + 1;
+        const isInactive = isAtBottom && fullyVisible;
+        
+        btn.classList.toggle('inactive', isInactive);
+      });
+      
+      // Use clicked section if set, otherwise computed from scroll
+      if (!clickedSectionId) {
+        updateActiveStripButton(computedActiveSection);
+      }
+    };
+    
+    // Clear clicked section on manual scroll
+    controlsEl.addEventListener('wheel', () => { clickedSectionId = null; }, { passive: true });
+    controlsEl.addEventListener('touchstart', () => { clickedSectionId = null; }, { passive: true });
+    
+    controlsEl.addEventListener('scroll', updateButtonStates);
+    // Initial state
+    updateButtonStates();
+    // Update on resize too
+    window.addEventListener('resize', updateButtonStates);
+  };
+  
+  // ============================================================
+  // Multiscroller Drag System
+  // Unlocked when legend is hidden (showLegend = false)
+  // Dragging a button scrolls its section into view:
+  //   - Button at top of strip → section top at panel top
+  //   - Button at bottom of strip → section bottom at panel bottom
+  // ============================================================
+  const setupMultiscrollerDrag = () => {
+    let dragState = null;
+    
+    const isUnlocked = () => !showLegend;
+    
+    const getPointerY = (e) => {
+      if (e.touches && e.touches.length > 0) return e.touches[0].clientY;
+      if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientY;
+      return e.clientY;
+    };
+    
+    const handleDragStart = (e, index) => {
+      if (!isUnlocked()) return;
+      
+      const y = getPointerY(e);
+      const stripRect = multiscrollerEl.getBoundingClientRect();
+      
+      dragState = {
+        index,
+        startY: y,
+        stripTop: stripRect.top,
+        stripHeight: stripRect.height
+      };
+      
+      // Prevent text selection during drag
+      e.preventDefault();
+    };
+    
+    const handleDragMove = (e) => {
+      if (!dragState) return;
+      
+      const y = getPointerY(e);
+      const relY = y - dragState.stripTop;
+      
+      // t ranges from 0 (top of strip) to 1 (bottom of strip)
+      const t = Math.max(0, Math.min(1, relY / dragState.stripHeight));
+      
+      // Get the section for the dragged button
+      const sectionId = SLIDER_CONFIG[dragState.index].id;
+      const section = document.getElementById(`section-${sectionId}`);
+      if (!section) return;
+      
+      // Calculate scroll position
+      // t=0: section top aligns with panel top
+      // t=1: section bottom aligns with panel bottom
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const panelHeight = controlsEl.clientHeight;
+      
+      const scrollMin = sectionTop;
+      const scrollMax = sectionTop + sectionHeight - panelHeight;
+      const scrollTarget = scrollMin + t * (scrollMax - scrollMin);
+      
+      controlsEl.scrollTop = Math.max(0, scrollTarget);
+    };
+    
+    const handleDragEnd = () => {
+      dragState = null;
+    };
+    
+    // Attach drag handlers to strip buttons
+    const buttons = multiscrollerEl.querySelectorAll('.strip-btn');
+    buttons.forEach((btn, i) => {
+      btn.addEventListener('mousedown', (e) => handleDragStart(e, i));
+      btn.addEventListener('touchstart', (e) => handleDragStart(e, i), { passive: false });
+    });
+    
+    // Global move/end handlers
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('touchmove', handleDragMove, { passive: true });
+    window.addEventListener('mouseup', handleDragEnd);
+    window.addEventListener('touchend', handleDragEnd);
+  };
+  
   const buildControls = () => {
     for (const group of SLIDER_CONFIG) {
       const groupEl = document.createElement('div');
       groupEl.className = 'control-group';
+      groupEl.id = `section-${group.id}`;
       
       const h3 = document.createElement('h3');
       h3.textContent = group.group;
@@ -879,6 +1319,7 @@ const SLIDER_CONFIG = [
       controlsEl.appendChild(groupEl);
     }
     
+    // Hint for large screens
     const hint = document.createElement('p');
     hint.className = 'hint';
     hint.innerHTML = 'Drag to pan. Scroll to zoom.<br><b>bend</b>: curves shared baseline<br><b>bendStack</b>: bends each stack into donut<br><b>gridiness</b>: moves centers to grid<br><b>curviness</b>: scales edge bends (0=straight)';
@@ -935,6 +1376,16 @@ const SLIDER_CONFIG = [
     document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
   };
   
+  // Legend toggle
+  legendToggle.addEventListener('click', () => {
+    showLegend = !showLegend;
+    legendToggle.classList.toggle('active', showLegend);
+    // Toggle multiscroller drag mode
+    multiscrollerEl.classList.toggle('multiscroller-unlocked', !showLegend);
+    renderChart();
+  });
+  
+  // Pan handling (mouse)
   container.addEventListener('mousedown', (e) => {
     isDragging = true;
     dragStart = { x: e.clientX, y: e.clientY };
@@ -943,14 +1394,41 @@ const SLIDER_CONFIG = [
   
   window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
-    panZoom.panX = panStart.panX + (e.clientX - dragStart.x);
-    panZoom.panY = panStart.panY + (e.clientY - dragStart.y);
+    // Scale pan by the ratio of viewBox to actual rendered size
+    const rect = svg.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 650 / rect.height;
+    panZoom.panX = panStart.panX + (e.clientX - dragStart.x) * scaleX;
+    panZoom.panY = panStart.panY + (e.clientY - dragStart.y) * scaleY;
     renderChart();
   });
   
   window.addEventListener('mouseup', () => isDragging = false);
   
+  // Pan handling (touch)
+  container.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      isDragging = true;
+      dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      panStart = { ...panZoom };
+    }
+  }, { passive: true });
+  
+  container.addEventListener('touchmove', (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const rect = svg.getBoundingClientRect();
+    const scaleX = 800 / rect.width;
+    const scaleY = 650 / rect.height;
+    panZoom.panX = panStart.panX + (e.touches[0].clientX - dragStart.x) * scaleX;
+    panZoom.panY = panStart.panY + (e.touches[0].clientY - dragStart.y) * scaleY;
+    renderChart();
+  }, { passive: true });
+  
+  container.addEventListener('touchend', () => isDragging = false);
+  
+  // Wheel zoom (disabled on touch devices)
   container.addEventListener('wheel', (e) => {
+    if (isTouchDevice()) return;
     e.preventDefault();
     params.zoom = Math.max(0, Math.min(2, params.zoom - e.deltaY * 0.001));
     const input = document.getElementById('zoom');
@@ -958,14 +1436,19 @@ const SLIDER_CONFIG = [
     if (input) input.value = params.zoom;
     if (valEl) valEl.textContent = formatValue(params.zoom);
     renderChart();
-  });
+  }, { passive: false });
   
   const renderChart = () => {
-    OmniChart.render(svg, data, params, panZoom);
+    OmniChart.render(svg, data, params, panZoom, showLegend);
   };
   
+  // Initialize
+  buildMultiscroller();
   buildControls();
-  setActivePreset('Stacked Bar');
+  setupScrollTracking();
+  setupMultiscrollerDrag();
+  setActivePreset('Stacked');
+  updateActiveStripButton('presets');
   renderChart();
   
 })();

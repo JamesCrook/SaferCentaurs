@@ -90,6 +90,7 @@
       overflow: hidden;
       cursor: grab;
       min-width: 0;
+      position: relative;
     }
     
     .chart-container:active { cursor: grabbing; }
@@ -103,12 +104,51 @@
       max-height: 100%;
     }
     
+    /* HTML Legend (inside chart-container, top-right, fixed size) */
+    .chart-legend {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 15, 35, 0.85);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .chart-legend.hidden {
+      display: none;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    
+    .legend-label {
+      font-size: 10px;
+      color: #999;
+      white-space: nowrap;
+    }
+    
     /* Controls Wrapper */
     .controls-wrapper {
       display: flex;
       width: 320px;
       flex-shrink: 0;
       min-height: 0;
+      align-self: stretch;
     }
     
     /* Multiscroller Strip */
@@ -120,6 +160,7 @@
       display: flex;
       flex-direction: column;
       padding: 4px 0;
+      align-self: stretch;
     }
     
     /* Center content-sized buttons when using full names */
@@ -161,6 +202,7 @@
     /* Button won't do anything - section already visible/at-top */
     .strip-btn.inactive {
       color: #3a3a4a;
+      cursor: default;
     }
 
     .strip-btn.active {
@@ -168,9 +210,10 @@
       background: rgba(79, 195, 247, 0.15);
     }
     
-    .strip-btn.inactive:hover {
+    .strip-btn.inactive:not(.active):hover {
       color: #3a3a4a;
       background: transparent;
+      cursor: default;
     }
     
     /* When multiscroller is unlocked (legend hidden), show grab cursor */
@@ -210,6 +253,15 @@
     .control-group { 
       margin-bottom: 14px;
       scroll-margin-top: 4px;
+      padding: 8px;
+      margin-left: -8px;
+      margin-right: -4px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .control-group.active {
+      background: rgba(79, 195, 247, 0.06);
     }
     
     .control-group h3 {
@@ -271,101 +323,102 @@
         display: block;
       }
     }
-    
-    /* Legend (inside SVG, controlled by toggle) */
-    .legend-hidden .chart-legend { display: none; }
-    
+
     /* ============================================
-       RESPONSIVE: Portrait mobile (≤800px width)
+       PORTRAIT LAYOUT (default, controlled by JS)
        ============================================ */
-    @media (max-width: 800px) and (orientation: portrait) {
-      .layout {
-        flex-direction: column;
-        gap: 10px;
-        padding: 8px;
-      }
-      
-      .chart-container {
-        flex: 0 0 auto;
-        width: 100%;
-        aspect-ratio: 800 / 650;
-        min-height: 0;
-        /* Ensure minimum 210px for controls: header 30px + controls 210px + gaps 26px */
-        max-height: calc(100vh - 266px);
-      }
-      
-      .controls-wrapper {
-        width: 100%;
-        flex: 1;
-        min-height: 210px;
-        max-height: none;
-      }
-      
-      .multiscroller-strip {
-        border-radius: 12px 0 0 12px;
-      }
-      
-      .controls {
-        border-radius: 0 12px 12px 0;
-      }
+    body.layout-portrait .layout {
+      flex-direction: column;
+      gap: 10px;
+      padding: 8px;
     }
     
-    /* Landscape or wider screens - use grid so controls extend full height */
-    @media (min-width: 801px), (orientation: landscape) {
-      body {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        grid-template-rows: auto 1fr;
-        height: 100vh;
-        gap: 0 10px;
-        padding: 10px;
-      }
-      
-      .header {
-        grid-column: 1;
-        grid-row: 1;
-        height: auto;
-      }
-      
-      .layout {
-        display: contents;
-      }
-      
-      .chart-container {
-        grid-column: 1;
-        grid-row: 2;
-        flex: unset;
-        min-height: 0;
-      }
-      
-      .controls-wrapper {
-        grid-column: 2;
-        grid-row: 1 / 3;
-        width: auto;
-        height: 100%;
-      }
+    body.layout-portrait .chart-container {
+      flex: 0 0 auto;
+      width: 100%;
+      aspect-ratio: 800 / 650;
+      min-height: 0;
+      /* Ensure minimum space for controls */
+      max-height: calc(100vh - 270px);
+    }
+    
+    body.layout-portrait .controls-wrapper {
+      width: 100%;
+      flex: 1;
+      min-height: 210px;
+      max-height: none;
+    }
+    
+    body.layout-portrait .multiscroller-strip {
+      border-radius: 12px 0 0 12px;
+    }
+    
+    body.layout-portrait .controls {
+      border-radius: 0 12px 12px 0;
+    }
+    
+    /* ============================================
+       LANDSCAPE LAYOUT (controlled by JS)
+       ============================================ */
+    body.layout-landscape {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      gap: 0 10px;
+      padding: 10px;
+    }
+    
+    body.layout-landscape .header {
+      grid-column: 1;
+      grid-row: 1;
+      height: auto;
+    }
+    
+    body.layout-landscape .layout {
+      display: contents;
+    }
+    
+    body.layout-landscape .chart-container {
+      grid-column: 1;
+      grid-row: 2;
+      flex: unset;
+      min-height: 0;
+      aspect-ratio: 800 / 650;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: 100%;
+      justify-self: center;
+    }
+    
+    body.layout-landscape .controls-wrapper {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      width: auto;
+      height: 100%;
     }
     
     /* Large landscape - taller header */
     @media (min-width: 1000px) {
-      .header {
+      body.layout-landscape .header {
         flex-direction: column;
         padding: 10px;
       }
       
-      .header h1 {
+      body.layout-landscape .header h1 {
         font-size: 24px;
         margin-bottom: 5px;
       }
       
-      .subtitle {
+      body.layout-landscape .subtitle {
         display: block;
         color: #888;
         font-size: 14px;
         text-align: center;
       }
       
-      .header-right {
+      body.layout-landscape .header-right {
         top: 10px;
         transform: none;
       }
@@ -391,6 +444,9 @@
   <div class="layout">
     <div class="chart-container" id="chart-container">
       <svg id="chart" viewBox="0 0 800 650" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chart-legend" id="chart-legend">
+        <!-- Legend items generated by JS -->
+      </div>
     </div>
     <div class="controls-wrapper">
       <div class="multiscroller-strip" id="multiscroller">
@@ -838,7 +894,7 @@ const OmniChart = (function() {
     }
   };
   
-  const render = (svg, data, params, panZoom = { panX: 0, panY: 0 }, showLegend = true) => {
+  const render = (svg, data, params, panZoom = { panX: 0, panY: 0 }) => {
     const viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
     const width = viewBox[2];
     const height = viewBox[3];
@@ -853,66 +909,6 @@ const OmniChart = (function() {
     renderGeometries(mainGroup, geoms, params);
     
     svg.appendChild(mainGroup);
-    
-    if (showLegend) {
-      renderLegend(svg, data.series, params.focusProduct, params.numProducts);
-    }
-  };
-  
-  const renderLegend = (svg, series, focusProduct, numProducts) => {
-    const drawOrder = getDrawOrder(focusProduct, numProducts);
-    const legendGroup = createElement('g');
-    legendGroup.classList.add('chart-legend');
-    
-    // Legend sizing (scaled up for visibility when chart shrinks)
-    const itemHeight = 28;
-    const iconSize = 14;
-    const fontSize = 14;
-    const paddingX = 12;
-    const paddingY = 10;
-    const legendWidth = 100;
-    const legendHeight = drawOrder.length * itemHeight + paddingY * 2;
-    
-    // Position at top-right
-    const legendX = 800 - legendWidth - 15;
-    const legendY = 15;
-    legendGroup.setAttribute('transform', `translate(${legendX}, ${legendY})`);
-    
-    // Translucent background
-    const bg = createElement('rect');
-    bg.setAttribute('x', -paddingX);
-    bg.setAttribute('y', -paddingY);
-    bg.setAttribute('width', legendWidth + paddingX);
-    bg.setAttribute('height', legendHeight);
-    bg.setAttribute('fill', '#0f0f23');
-    bg.setAttribute('fill-opacity', '0.75');
-    bg.setAttribute('rx', 6);
-    legendGroup.appendChild(bg);
-    
-    for (let p = 0; p < drawOrder.length; p++) {
-      const origIdx = drawOrder[p];
-      const g = createElement('g');
-      g.setAttribute('transform', `translate(0, ${p * itemHeight})`);
-      
-      const rect = createElement('rect');
-      rect.setAttribute('width', iconSize);
-      rect.setAttribute('height', iconSize);
-      rect.setAttribute('fill', COLORS[origIdx % COLORS.length]);
-      rect.setAttribute('rx', 3);
-      
-      const text = createElement('text');
-      text.setAttribute('x', iconSize + 8);
-      text.setAttribute('y', iconSize - 2);
-      text.setAttribute('fill', '#aaa');
-      text.setAttribute('font-size', `${fontSize}px`);
-      text.textContent = series[origIdx].name;
-      
-      g.appendChild(rect);
-      g.appendChild(text);
-      legendGroup.appendChild(g);
-    }
-    
-    svg.appendChild(legendGroup);
   };
   
   const PRESETS = {
@@ -983,7 +979,7 @@ const OmniChart = (function() {
     }
   };
   
-  return { render, generateData, PRESETS, COLORS, NUM_PRODUCTS };
+  return { render, generateData, PRESETS, COLORS, NUM_PRODUCTS, getDrawOrder };
 })();
 
 
@@ -999,122 +995,184 @@ const SLIDER_CONFIG = [
     { id: 'focusProduct', label: 'focusProduct', min: 1, max: 5, step: 1, default: 1 },
     { id: 'normalize', label: 'normalize', min: 0, max: 1, step: 0.01, default: 0 },
   ]},
-  { group: 'View', id: 'view', abbrev: 'Vie', sliders: [
-    { id: 'zoom', label: 'zoom', min: 0, max: 2, step: 0.01, default: 1 },
-    { id: 'rotation', label: 'rotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
-    { id: 'categoryRotation', label: 'categoryRotation', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
-  ]},
-  { group: 'Coordinate', id: 'coord', abbrev: 'Coo', sliders: [
-    { id: 'bend', label: 'bend', min: 0, max: 6.283, step: 0.01, default: 0, format: 'angle' },
+  { group: 'Global shape', id: 'shape', abbrev: 'Shp', sliders: [
+    { id: 'bend', label: 'bend', min: 0, max: 6.283, step: 0.01, default: 0 },
     { id: 'bendStack', label: 'bendStack', min: 0, max: 1, step: 0.01, default: 0 },
     { id: 'gridiness', label: 'gridiness', min: 0, max: 1, step: 0.01, default: 0 },
+    { id: 'rotation', label: 'rotation', min: 0, max: 6.283, step: 0.01, default: 0 },
+    { id: 'categoryRotation', label: 'categoryRotation', min: 0, max: 6.283, step: 0.01, default: 0 },
   ]},
   { group: 'Segment', id: 'segment', abbrev: 'Seg', sliders: [
-    { id: 'segmentWidth', label: 'segmentWidth', min: 0.05, max: 1, step: 0.01, default: 0.8 },
-    { id: 'segmentGap', label: 'segmentGap', min: 0, max: 0.5, step: 0.01, default: 0.05 },
-    { id: 'curviness', label: 'curviness', min: 0, max: 1, step: 0.01, default: 1 },
+    { id: 'segmentWidth', label: 'segmentWidth', min: 0, max: 1, step: 0.01, default: 0.8 },
+    { id: 'segmentGap', label: 'segmentGap', min: 0, max: 0.5, step: 0.01, default: 0.08 },
     { id: 'flatness', label: 'flatness', min: 0, max: 1, step: 0.01, default: 1 },
-  ]},
-  { group: 'Stacking', id: 'stacking', abbrev: 'Sta', sliders: [
     { id: 'stack', label: 'stack', min: 0, max: 1, step: 0.01, default: 1 },
     { id: 'baseline', label: 'baseline', min: 0, max: 1, step: 0.01, default: 0.5 },
     { id: 'alignment', label: 'alignment', min: 0, max: 1, step: 0.01, default: 0 },
+    { id: 'curviness', label: 'curviness', min: 0, max: 1, step: 0.01, default: 0 },
   ]},
-  { group: 'Appearance', id: 'appearance', abbrev: 'App', sliders: [
+  { group: 'Style', id: 'style', abbrev: 'Sty', sliders: [
     { id: 'fillOpacity', label: 'fillOpacity', min: 0, max: 1, step: 0.01, default: 1 },
-    { id: 'strokeWidth', label: 'strokeWidth', min: 0, max: 5, step: 0.5, default: 0 },
-    { id: 'topWidth', label: 'topWidth', min: 0, max: 5, step: 0.5, default: 0 },
+    { id: 'strokeWidth', label: 'strokeWidth', min: 0, max: 3, step: 0.1, default: 0 },
+    { id: 'topWidth', label: 'topWidth', min: 0, max: 5, step: 0.1, default: 0 },
+    { id: 'zoom', label: 'zoom', min: 0.25, max: 2, step: 0.01, default: 1 },
   ]},
 ];
 
 
 // ============================================================
-// Demo Application
+// UI State & Initialization
 // ============================================================
 
 (function() {
-  let numCategories = 6;
-  let data = OmniChart.generateData(numCategories);
-  let params = { ...OmniChart.PRESETS['Stacked'], focusProduct: 1, numProducts: 3 };
-  let panZoom = { panX: 0, panY: 0 };
-  let isDragging = false;
-  let dragStart = { x: 0, y: 0 };
-  let panStart = { x: 0, y: 0 };
-  let showLegend = true;
-  
   const svg = document.getElementById('chart');
   const container = document.getElementById('chart-container');
   const controlsEl = document.getElementById('controls');
   const multiscrollerEl = document.getElementById('multiscroller');
   const legendToggle = document.getElementById('legend-toggle');
+  const legendEl = document.getElementById('chart-legend');
   
-  // Touch detection
-  const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  let numCategories = 6;
+  let data = OmniChart.generateData(numCategories);
+  let showLegend = true;
+  let isDragging = false;
+  let dragStart = { x: 0, y: 0 };
+  let panStart = { panX: 0, panY: 0 };
+  
+  const params = { ...OmniChart.PRESETS['Stacked'], focusProduct: 1, numProducts: 3 };
+  const panZoom = { panX: 0, panY: 0 };
   
   const formatValue = (val, format) => {
-    if (format === 'angle') return (val / Math.PI).toFixed(2) + 'π';
-    if (Number.isInteger(val)) return val;
+    if (format === 'deg') return `${Math.round(val * 180 / Math.PI)}°`;
+    if (format === 'int') return Math.round(val);
     return val.toFixed(2);
+  };
+  
+  const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // ============================================================
+  // Layout Management - Smart switching based on chart size
+  // ============================================================
+  
+  // Layout constants
+  const ASPECT_RATIO = 800 / 650;  // Chart aspect ratio
+  const CONTROLS_WIDTH = 320;      // w1: min width of controls panel
+  const HEADER_HEIGHT = 30;        // Header height
+  const MIN_CONTROLS_HEIGHT = 210; // Minimum controls height in portrait
+  const PADDING = 20;              // Total padding (gaps + body padding)
+  
+  // h1 = header height + min controls height + padding
+  const H1 = HEADER_HEIGHT + MIN_CONTROLS_HEIGHT + PADDING;
+  const W1 = CONTROLS_WIDTH + PADDING;
+  
+  const updateLayout = () => {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    
+    // Formula: use landscape when (W - w1) > r * (H - h1)
+    // This ensures the chart is the same size at the transition point
+    const landscapeChartWidth = W - W1;
+    const portraitChartWidth = ASPECT_RATIO * (H - H1);
+    
+    const useLandscape = landscapeChartWidth > portraitChartWidth;
+    
+    document.body.classList.toggle('layout-landscape', useLandscape);
+    document.body.classList.toggle('layout-portrait', !useLandscape);
+  };
+  
+  // Initialize layout and listen for resize
+  updateLayout();
+  window.addEventListener('resize', () => {
+    updateLayout();
+    updateMultiscrollerNames();
+  });
+  
+  // ============================================================
+  // HTML Legend Management
+  // ============================================================
+  
+  const updateLegend = () => {
+    const drawOrder = OmniChart.getDrawOrder(params.focusProduct, params.numProducts);
+    
+    legendEl.innerHTML = '';
+    
+    for (const origIdx of drawOrder) {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      
+      const colorBox = document.createElement('div');
+      colorBox.className = 'legend-color';
+      colorBox.style.backgroundColor = OmniChart.COLORS[origIdx % OmniChart.COLORS.length];
+      
+      const label = document.createElement('span');
+      label.className = 'legend-label';
+      label.textContent = data.series[origIdx].name;
+      
+      item.appendChild(colorBox);
+      item.appendChild(label);
+      legendEl.appendChild(item);
+    }
+    
+    legendEl.classList.toggle('hidden', !showLegend);
   };
   
   // Track explicitly clicked section (shared between buildMultiscroller and setupScrollTracking)
   let clickedSectionId = null;
   
-  // Build multiscroller buttons
+  // ============================================================
+  // Multiscroller - jump-to-section buttons
+  // ============================================================
+  
   const buildMultiscroller = () => {
     for (const group of SLIDER_CONFIG) {
       const btn = document.createElement('button');
       btn.className = 'strip-btn';
-      btn.dataset.target = `section-${group.id}`;
-      btn.dataset.abbrev = group.abbrev || group.group.slice(0, 3);
-      btn.dataset.full = group.group;
-      btn.dataset.sectionId = group.id;
-      btn.textContent = btn.dataset.abbrev;
+      btn.dataset.section = group.id;
+      btn.textContent = group.abbrev;
       
       btn.addEventListener('click', () => {
         if (btn.classList.contains('inactive')) return;
-        const target = document.getElementById(btn.dataset.target);
-        if (target) {
+        const section = document.getElementById(`section-${group.id}`);
+        if (section) {
           clickedSectionId = group.id;
           updateActiveStripButton(group.id);
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
       multiscrollerEl.appendChild(btn);
     }
-    updateStripButtonText();
-    window.addEventListener('resize', updateStripButtonText);
-  };
-  
-  // Update strip button text based on available height
-  const updateStripButtonText = () => {
-    const buttons = multiscrollerEl.querySelectorAll('.strip-btn');
-    const stripHeight = multiscrollerEl.clientHeight;
-    
-    // Each character is roughly 9px in vertical writing mode, plus padding per button
-    const charHeight = 9;
-    const paddingPerButton = 12;
-    
-    // Sum actual height needed for each button's full text
-    const neededTotal = SLIDER_CONFIG.reduce((sum, g) => {
-      return sum + (g.group.length * charHeight) + paddingPerButton;
-    }, 0);
-    
-    const useFull = stripHeight >= neededTotal;
-    
-    multiscrollerEl.classList.toggle('full-names', useFull);
-    buttons.forEach(btn => {
-      btn.textContent = useFull ? btn.dataset.full : btn.dataset.abbrev;
-    });
   };
   
   const updateActiveStripButton = (activeId) => {
-    document.querySelectorAll('.strip-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.target === `section-${activeId}`);
+    multiscrollerEl.querySelectorAll('.strip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.section === activeId);
+    });
+    // Also highlight the corresponding control section
+    controlsEl.querySelectorAll('.control-group').forEach(group => {
+      const sectionId = group.id.replace('section-', '');
+      group.classList.toggle('active', sectionId === activeId);
     });
   };
   
-  // Track scroll position to highlight active section and mark inactive buttons
+  const updateMultiscrollerNames = (retryCount = 0) => {
+    const buttons = multiscrollerEl.querySelectorAll('.strip-btn');
+    const stripHeight = multiscrollerEl.clientHeight;
+    
+    // If layout not ready yet, retry (max 3 times)
+    if (stripHeight < 100 && retryCount < 3) {
+      requestAnimationFrame(() => updateMultiscrollerNames(retryCount + 1));
+      return;
+    }
+    
+    // Need roughly 400px for full names (5 items with longest being "Global shape")
+    const useFullNames = stripHeight >= 400;
+    
+    buttons.forEach((btn, i) => {
+      btn.textContent = useFullNames ? SLIDER_CONFIG[i].group : SLIDER_CONFIG[i].abbrev;
+    });
+    multiscrollerEl.classList.toggle('full-names', useFullNames);
+  };
+  
   const setupScrollTracking = () => {
     const updateButtonStates = () => {
       const scrollTop = controlsEl.scrollTop;
@@ -1164,11 +1222,8 @@ const SLIDER_CONFIG = [
   };
   
   // ============================================================
-  // Multiscroller Drag System
-  // Unlocked when legend is hidden (showLegend = false)
-  // Dragging a button scrolls its section into view:
-  //   - Button at top of strip → section top at panel top
-  //   - Button at bottom of strip → section bottom at panel bottom
+  // Multiscroller drag (disabled)
+  // Future feature that allows dragging of the tabs, to scroll
   // ============================================================
   const setupMultiscrollerDrag = () => {
     let dragState = null;
@@ -1382,7 +1437,7 @@ const SLIDER_CONFIG = [
     legendToggle.classList.toggle('active', showLegend);
     // Toggle multiscroller drag mode
     multiscrollerEl.classList.toggle('multiscroller-unlocked', !showLegend);
-    renderChart();
+    updateLegend();
   });
   
   // Pan handling (mouse)
@@ -1439,17 +1494,21 @@ const SLIDER_CONFIG = [
   }, { passive: false });
   
   const renderChart = () => {
-    OmniChart.render(svg, data, params, panZoom, showLegend);
+    OmniChart.render(svg, data, params, panZoom);
+    updateLegend();
   };
   
   // Initialize
   buildMultiscroller();
   buildControls();
   setupScrollTracking();
-  setupMultiscrollerDrag();
+  //setupMultiscrollerDrag();
   setActivePreset('Stacked');
   updateActiveStripButton('presets');
   renderChart();
+  
+  // Update multiscroller names after layout settles
+  requestAnimationFrame(updateMultiscrollerNames);
   
 })();
 </script>

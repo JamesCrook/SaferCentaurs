@@ -7,9 +7,10 @@ function addBackCircle() {
             left: 20px;
             width: 40px;
             height: 40px;
-            background-color: #333;
+            background-color: #0003;
             color: white;
             border-radius: 20px;
+            border: 1px solid #fff3;
             display: flex;
             align-items: center;
             justify-content: center;

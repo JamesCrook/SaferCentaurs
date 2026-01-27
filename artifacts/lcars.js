@@ -27,7 +27,9 @@ class LcarsUI {
       toggleSpin();
     else if( action == 'Recenter')  
       centerView();
-    else if( action == 'Dark UI')  
+    else if( action == 'Articles') 
+      Lcars.lcarsNavigate( "./articles.html") 
+    else if( action == 'Dark UI') 
       setTheme('dark');
     else if( action == 'Light UI')  
       setTheme('light');
@@ -289,6 +291,20 @@ class LcarsUI {
     }
     return text;
   }
+
+  lcarsNavigate(href, direction) {
+    const overlay = document.getElementById('wipe-overlay');
+    const scanLine = document.getElementById('scan-line');
+    
+    // Start both animations together
+    overlay.classList.add('active');
+    scanLine.classList.add('active');
+    
+    // Navigate when wipe completes
+    setTimeout(() => {
+      window.location.href = href;
+    }, 480);
+  }  
 }
 
 class HamburgerMenu {
@@ -568,7 +584,6 @@ class LcarsHeader {
         </div>`
     document.body.prepend(header);
   }
-
 }
 
 const Lcars = new LcarsUI();

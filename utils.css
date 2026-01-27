@@ -231,7 +231,7 @@ textarea::-webkit-scrollbar-thumb:hover {
 .panel {
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px #00000019;
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
@@ -368,7 +368,7 @@ textarea::-webkit-scrollbar-thumb:hover {
 .concept-card {
     border: 1px solid #eee;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px #00000019;
     flex: 1 0 calc(25% - 15px);
     min-width: 200px;
     padding: 15px;
@@ -391,9 +391,10 @@ textarea::-webkit-scrollbar-thumb:hover {
     display: flex;
     gap: 8px;
 }
-    .option input {
-      margin: 0;
-    }
+.option input {
+  margin: 0;
+}
+
 .button-container {
     display: flex;
     gap: 10px;
@@ -666,41 +667,6 @@ textarea::-webkit-scrollbar-thumb:hover {
     border-right: 1px solid var(--color-444);
     cursor: ew-resize;
     width: 5px;
-}
-#col1 {
-    background: var(--color-333);
-    flex-basis: 90px;
-}
-
-#col2 {
-    background: var(--color-333);
-    flex-basis: 175px;
-    min-width: 100px;
-}
-
-#col3 {
-    background: var(--color-333);
-    flex-grow: 1;
-}
-
-#col2 h3,
-#col1 h3,
-    {
-    color: var(--color-fdd);
-}
-
-#col2 h2:hover,
-#col2 h3:hover,
-#col2 h4:hover,
-#col2 h5:hover,
-#col2 h6:hover,
-#col1 h2:hover,
-#col1 h3:hover,
-#col1 h4:hover,
-#col1 h5:hover,
-#col1 h6:hover {
-    background: var(--color-444);
-    color: var(--color-45f049);
 }
 
 .canvas-container {

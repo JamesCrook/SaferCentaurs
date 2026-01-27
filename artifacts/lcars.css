@@ -63,6 +63,7 @@
     --lcars-bg: black;
     --lcars-text: white;
     --lcars-text-on-block: black;
+    --destination-bg: #fafafa;    
 }
 
 
@@ -330,6 +331,111 @@ body {
 .cyan       { background-color: var(--lcars-cyan); }
 .pink       { background-color: var(--lcars-pink); }
 
+/* =============================================================================
+   7a. Wipes
+   
+   ============================================================================= */
+
+
+/* The color reveal layer - sits behind scan line */
+.lcars-wipe-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* Horizontal wipe: reveals white from left */
+.lcars-wipe-overlay.wipe-h {
+    background: var(--destination-bg);
+    clip-path: inset(0 100% 0 0);
+}
+
+.lcars-wipe-overlay.wipe-h.active {
+    animation: lcars-reveal-h 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes lcars-reveal-h {
+    0%   { clip-path: inset(0 100% 0 0); }
+    100% { clip-path: inset(0 0 0 0); }
+}
+
+/* Vertical wipe: reveals black from top */
+.lcars-wipe-overlay.wipe-v {
+    background: var(--lcars-bg);
+    clip-path: inset(0 0 100% 0);
+}
+
+.lcars-wipe-overlay.wipe-v.active {
+    animation: lcars-reveal-v 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes lcars-reveal-v {
+    0%   { clip-path: inset(0 0 100% 0); }
+    100% { clip-path: inset(0 0 0 0); }
+}
+
+/* The scan line - rides the edge of the wipe */
+.lcars-scan-line {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+}
+
+/* Horizontal scan line */
+.lcars-scan-line.scan-h {
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100vh;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 153, 0, 0.4) 20%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(255, 153, 0, 0.4) 80%,
+        transparent 100%
+    );
+    box-shadow: 0 0 20px rgba(255, 153, 0, 0.6);
+}
+
+.lcars-scan-line.scan-h.active {
+    animation: lcars-scan-h 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes lcars-scan-h {
+    0%   { transform: translateX(0); opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateX(100vw); opacity: 0; }
+}
+
+/* Vertical scan line */
+.lcars-scan-line.scan-v {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 6px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(255, 153, 0, 0.4) 20%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(255, 153, 0, 0.4) 80%,
+        transparent 100%
+    );
+    box-shadow: 0 0 20px rgba(255, 153, 0, 0.6);
+}
+
+.lcars-scan-line.scan-v.active {
+    animation: lcars-scan-v 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes lcars-scan-v {
+    0%   { transform: translateY(0); opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
 
 /* =============================================================================
    8. RESPONSIVE BREAKPOINTS

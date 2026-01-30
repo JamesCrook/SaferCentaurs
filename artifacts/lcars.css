@@ -95,7 +95,7 @@ body {
    ============================================================================= */
 
 /* Main horizontal container */
-.lcar-panel {
+.lcars-panel {
     display: flex;
     flex-direction: row;
     flex: 1;
@@ -103,7 +103,7 @@ body {
 }
 
 /* Sidebar columns */
-.sidebar {
+.lcars-sidebar {
     width: var(--lcars-sidebar-width);
     display: flex;
     flex-direction: column;
@@ -114,23 +114,23 @@ body {
     color: var(--lcars-text-on-block);
 }
 
-.sidebar.left {
+.lcars-sidebar.left {
     order: -1;
     padding-left: 10px;
 }
 
-.sidebar.right {
+.lcars-sidebar.right {
     order: 1;
     padding-right: 10px;
 }
 
 /* When sidebar itself is a block */
-.sidebar.block {
+.lcars-sidebar.block {
     width: var(--lcars-sidebar-block-width);
 }
 
 /* Central content area - CARVES THROUGH sidebars */
-.central {
+.lcars-central {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -142,7 +142,7 @@ body {
 }
 
 /* Panel content area */
-.panel-content {
+.lcars-panel-content {
     display:flex;
     flex-direction: column;
     flex: 1 1 auto;  /* grow, shrink, but basis=auto preserves content size */
@@ -157,7 +157,7 @@ body {
    4. BLOCK SIZING (Proportional flex values)
    ============================================================================= */
 
-.block {
+.lcars-block {
     display: flex;
     flex: 1;
     align-items: center;
@@ -168,14 +168,14 @@ body {
 }
 
 /* Size variants - smallest to largest */
-.sssblock { flex: 0.1; }
-.ssblock  { flex: 0.21; }
-.sblock   { flex: 0.43; }
-.mblock   { flex: 1; }
-.lblock   { flex: 2; }
+.lcars-sssblock { flex: 0.1; }
+.lcars-ssblock  { flex: 0.21; }
+.lcars-sblock   { flex: 0.43; }
+.lcars-mblock   { flex: 1; }
+.lcars-lblock   { flex: 2; }
 
 /* Shim - thin spacer */
-.shim {
+.lcars-shim {
     height: var(--lcars-shim-height);
 }
 
@@ -191,25 +191,25 @@ body {
 /* --- Sidebar Corners (large radius) --- */
 
 /* Bottom-left corner */
-.bl {
+.lcars-bl {
     border-bottom-left-radius: var(--lcars-radius-large);
     margin-bottom: calc(-1 * var(--lcars-overlap-v));
 }
 
 /* Bottom-right corner */
-.br {
+.lcars-br {
     border-bottom-right-radius: var(--lcars-radius-large);
     margin-bottom: calc(-1 * var(--lcars-overlap-v));
 }
 
 /* Top-left corner */
-.tl {
+.lcars-tl {
     border-top-left-radius: var(--lcars-radius-large);
     margin-top: calc(-1 * var(--lcars-overlap-v));
 }
 
 /* Top-right corner */
-.tr {
+.lcars-tr {
     border-top-right-radius: var(--lcars-radius-large);
     margin-top: calc(-1 * var(--lcars-overlap-v));
 }
@@ -217,7 +217,7 @@ body {
 /* --- Bar Corners (small radius, with padding compensation) --- */
 
 /* Bottom-left on bar - extends into central area */
-.blp {
+.lcars-blp {
     border-bottom-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
     padding-left: var(--lcars-overlap-h);
@@ -225,7 +225,7 @@ body {
 }
 
 /* Bottom-left optional - also extends vertically */
-.blpo {
+.lcars-blpo {
     border-bottom-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
     padding-left: var(--lcars-overlap-h);
@@ -233,27 +233,27 @@ body {
 }
 
 /* Bottom-right on bar */
-.brp {
+.lcars-brp {
     border-bottom-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
 }
 
 /* Bottom-right optional - also extends vertically */
-.brpo {
+.lcars-brpo {
     border-bottom-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
     margin-bottom: calc(-1 * var(--lcars-overlap-v2));
 }
 
 /* Top-left on bar - extra padding for content */
-.tlp {
+.lcars-tlp {
     border-top-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
     padding-left: calc(1 * var(--lcars-overlap-h));
 }
 
 /* Top-left optional - also extends vertically */
-.tlpo {
+.lcars-tlpo {
     border-top-left-radius: var(--lcars-radius-small);
     margin-left: calc(-1 * var(--lcars-overlap-h));
     padding-left: calc(1 * var(--lcars-overlap-h));
@@ -261,14 +261,14 @@ body {
 }
 
 /* Top-right on bar */
-.trp {
+.lcars-trp {
     border-top-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
     padding-bottom: 0px;
 }
 
 /* Top-right optional - also extends vertically */
-.trpo {
+.lcars-trpo {
     border-top-right-radius: var(--lcars-radius-small);
     margin-right: calc(-1 * var(--lcars-overlap-h));
     margin-top: calc(-1 * var(--lcars-overlap-v2));
@@ -279,7 +279,7 @@ body {
    6. BAR STRUCTURE (Top/Bottom bars)
    ============================================================================= */
 
-.bar {
+.lcars-bar {
     display: flex;
     flex-direction: row;
     flex-shrink: 0;
@@ -295,19 +295,19 @@ body {
 }
 
 /* Bar alignment variants */
-.barbot {
+.lcars-barbot {
     display: flex;
     align-items: flex-end;
 }
 
-.bartop {
+.lcars-bartop {
     display: flex;
     align-items: flex-start;
 }
 
-/* Bar blocks don't need special styling beyond .block */
-.bar.block {
-    /* Inherits from .block */
+/* Bar blocks don't need special styling beyond .lcars-block */
+.lcars-bar.block {
+    /* Inherits from .lcars-block */
 }
 
 
@@ -318,18 +318,18 @@ body {
    Example: <div class="block sblock bl purple">
    ============================================================================= */
 
-.purple     { background-color: var(--lcars-purple); }
-.tan        { background-color: var(--lcars-tan); }
-.rust       { background-color: var(--lcars-rust); }
-.orange     { background-color: var(--lcars-orange); }
-.beige      { background-color: var(--lcars-beige); }
-.red        { background-color: var(--lcars-red); }
-.blood-red  { background-color: var(--lcars-blood-red); }
-.blue       { background-color: var(--lcars-blue); }
-.green      { background-color: var(--lcars-green); }
-.yellow     { background-color: var(--lcars-yellow); }
-.cyan       { background-color: var(--lcars-cyan); }
-.pink       { background-color: var(--lcars-pink); }
+.lcars-purple     { background-color: var(--lcars-purple); }
+.lcars-tan        { background-color: var(--lcars-tan); }
+.lcars-rust       { background-color: var(--lcars-rust); }
+.lcars-orange     { background-color: var(--lcars-orange); }
+.lcars-beige      { background-color: var(--lcars-beige); }
+.lcars-red        { background-color: var(--lcars-red); }
+.lcars-blood-red  { background-color: var(--lcars-blood-red); }
+.lcars-blue       { background-color: var(--lcars-blue); }
+.lcars-green      { background-color: var(--lcars-green); }
+.lcars-yellow     { background-color: var(--lcars-yellow); }
+.lcars-cyan       { background-color: var(--lcars-cyan); }
+.lcars-pink       { background-color: var(--lcars-pink); }
 
 /* =============================================================================
    7a. Wipes
@@ -450,38 +450,38 @@ body {
 
 /* Medium screens: hide optional elements */
 @media (max-width: 680px) {
-    .optional {
+    .lcars-optional {
         display: none;
     }
 }
 
 /* Small/portrait screens: collapse LCARS corners */
 @media (max-width: 600px), (max-aspect-ratio: 2/3) {
-    .optional2 {
+    .lcars-optional2 {
         display: none;
     }
     
     /* Remove corner carve-outs on small screens */
     /* The 'o' suffix variants collapse to flat edges */
-    .blpo {
+    .lcars-blpo {
         border-bottom-left-radius: 0px;
         margin-left: 0px;
         padding-left: var(--lcars-overlap-h);
     }
     
-    .brpo {
+    .lcars-brpo {
         border-bottom-right-radius: 0px;
         margin-right: 0px;
         padding-right: var(--lcars-overlap-h);
     }
     
-    .tlpo {
+    .lcars-tlpo {
         border-top-left-radius: 0px;
         margin-left: 0px;
         padding-left: var(--lcars-overlap-h);
     }
     
-    .trpo {
+    .lcars-trpo {
         border-top-right-radius: 0px;
         margin-right: 0px;
         padding-right: var(--lcars-overlap-h);
@@ -490,7 +490,7 @@ body {
 
 /* Very small screens */
 @media (max-width: 400px) {
-    .optional4 {
+    .lcars-optional4 {
         display: none;
     }
 }

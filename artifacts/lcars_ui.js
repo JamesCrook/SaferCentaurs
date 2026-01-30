@@ -10,7 +10,7 @@ const lighten = (hex, amt = 40) => {
 
 function activateBlocks() {
   const blocks = new Map();
-  document.querySelectorAll('.block[data-group]').forEach(el => {
+  document.querySelectorAll('.lcars-block[data-group]').forEach(el => {
     const group = el.dataset.group;
 
     // We could highlight all blocks of the same group (i.e. command) together,

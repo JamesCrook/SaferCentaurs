@@ -12,7 +12,26 @@ class LcarsUI {
 
   doCommand(event) {
     var elt = event.currentTarget || event.target;
-    let action = elt.dataset.group
+    let action = elt.dataset.group;
+    let pdbId = elt.dataset.pdb;
+    
+    // Handle dynamic proteins (with pdbId)
+    if (pdbId && typeof switchMolecule === 'function') {
+      switchMolecule(pdbId, action);
+      return;
+    }
+    
+    // Handle batch navigation
+    if (action === 'PrevBatch' && typeof prevBatch === 'function') {
+      prevBatch();
+      return;
+    }
+    if (action === 'NextBatch' && typeof nextBatch === 'function') {
+      nextBatch();
+      return;
+    }
+    
+    // Original hardcoded commands
     if( action == 'Cartoon')
       changeRepresentation('cartoon')
     else if( action == 'Spacefill')
@@ -33,6 +52,7 @@ class LcarsUI {
       setTheme('dark');
     else if( action == 'Light UI')  
       setTheme('light');
+/*    
     else if( action == 'Hemoglobin')
       switchMolecule('1A3N', 'HEMOGLOBIN');
     else if( action == 'Catalase')
@@ -47,6 +67,7 @@ class LcarsUI {
       switchMolecule('1TRZ', 'INSULIN');
     else if( action == 'GFP')
       switchMolecule('1EMA', 'GREEN FL.');
+*/      
     else if( action == 'Overview')
       showInfoSection('overview')
     else if( action == 'Credits')
@@ -55,7 +76,7 @@ class LcarsUI {
     else if( action == 'Reset')
       resetAll();
     else
-      alert(`No handler for ${action}`);
+      console.log(`No handler for ${action}`);
   }
 
   setPanel(panel, text) {

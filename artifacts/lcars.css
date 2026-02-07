@@ -494,3 +494,81 @@ body {
         display: none;
     }
 }
+
+
+/* LCARS Button Activation States */
+/* Add this to your lcars.css file or include it separately */
+
+.lcars-block {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+/*.lcars-block:hover {
+    filter: brightness(1.2);
+    transform: scale(1.02);
+}
+*/
+.lcars-block.active {
+    filter: brightness(1.4);
+    box-shadow: 0 0 15px currentColor;
+    animation: pulse 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Enhanced active states for different colors */
+.lcars-block.lcars-cyan.active {
+    box-shadow: 0 0 20px #4ecdc4;
+}
+
+.lcars-block.lcars-blue.active {
+    box-shadow: 0 0 20px #5555ff;
+}
+
+.lcars-block.lcars-purple.active {
+    box-shadow: 0 0 20px #aa88ff;
+}
+
+.lcars-block.lcars-pink.active {
+    box-shadow: 0 0 20px #ff88cc;
+}
+
+.lcars-block.lcars-blood-red.active {
+    box-shadow: 0 0 20px #cc4444;
+}
+
+.lcars-block.lcars-rust.active {
+    box-shadow: 0 0 20px #cc6633;
+}
+
+.lcars-block.lcars-orange.active {
+    box-shadow: 0 0 20px #ff9966;
+}
+
+.lcars-block.lcars-yellow.active {
+    box-shadow: 0 0 20px #ffcc66;
+}
+
+.lcars-block.lcars-tan.active {
+    box-shadow: 0 0 20px #cc9966;
+}
+
+.lcars-block.lcars-green.active {
+    box-shadow: 0 0 20px #66cc66;
+}
+
+.lcars-block.lcars-beige.active {
+    box-shadow: 0 0 20px #ccaa88;
+}

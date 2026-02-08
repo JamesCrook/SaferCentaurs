@@ -67,25 +67,26 @@ const PROTEIN_DATABASE = [
         <li><strong>Beta-Can:</strong> A unique fold where 11 beta-strands form a cylinder protecting the central fluorophore.</li>
         <li><strong>Fluorophore:</strong> Formed spontaneously from three amino acids (Ser65, Tyr66, Gly67).</li>
     </ul>` },
-    { pdb: '4HHB', name: 'HGB Hex', desc: 'Oxygen Carrier', color: 'rust',
-      info: 'Hemoglobin hexamer showing the quaternary structure. A tetramer with two alpha and two beta subunits, each containing a heme group.',
-      html: `   <h2>SYSTEM OVERVIEW</h2>
+    { pdb: '4HHB', name: 'OVERVIEW2', desc: 'Oxygen Carrier', color: 'beige',
+      info: 'Hemoglobin tetramer showing the quaternary structure. A tetramer with two alpha and two beta subunits, each containing a heme group.',
+      html: `   <h2>SYSTEM OVERVIEW2</h2>
     <p><strong>Atlas Scope:</strong> Fundamental Biopolymers</p>
-    <p>This module provides a comparative look at the building blocks of life. From the genetic blueprint (DNA) to the enzymes that facilitate metabolism (TIM) and the hormones that regulate system-wide state (Insulin).</p>
+    <p>This module provides a comparative look at 36 protein structures.</p>
     <ul>
         <li><strong>Visual Legend:</strong> Use buttons around the main panel to toggle between atomic detail and tertiary structure.</li>
-        <li><strong>Bio-Data:</strong> Structural data is retrieved in real-time from the PDB Global Archive.</li>
+        <li><strong>Navigation:</strong> &lt;&lt and &gt;&gt; to move through batches.</li>
+        <li><strong>Reconfiguration:</strong> In some demos, not this one, buttons reconfigure as you use them.</li>
     </ul>` },
     { pdb: '2LYZ', name: 'Lysozyme', desc: 'Cell Wall Lysis', color: 'orange',
       info: 'Lysozyme catalyzes hydrolysis of bacterial cell walls. One of the first enzymes to have its structure determined by X-ray crystallography.' },
     { pdb: '1MBO', name: 'Myoglobin', desc: 'Oxygen Storage', color: 'pink',
       info: 'Myoglobin stores oxygen in muscle cells. It was the first protein to have its three-dimensional structure revealed by X-ray crystallography.' },
-    { pdb: '2HHB', name: 'Deoxy HGB', desc: 'O2 Unbound State', color: 'purple',
+    { pdb: '2HHB', name: 'Deoxy Hemoglobin', desc: 'O2 Unbound State', color: 'purple',
       info: 'Deoxygenated hemoglobin structure showing the T (tense) state. Demonstrates allosteric regulation in oxygen binding.' },
     { pdb: '1CRN', name: 'Crambin', desc: 'Plant Seed Protein', color: 'yellow',
       info: 'Crambin is a small plant seed protein. Its high-resolution structure made it important for developing crystallographic refinement techniques.' },
     
-    { pdb: '1GFL', name: 'GB1 Dmain', desc: 'Protein Binding', color: 'cyan',
+    { pdb: '1GFL', name: 'GB1 Domain', desc: 'Protein Binding', color: 'cyan',
       info: 'Immunoglobulin-binding domain from Streptococcal protein G. A model system for protein folding studies.' },
     { pdb: '1UBQ', name: 'Ubiquitin', desc: 'Protein Tagging', color: 'tan',
       info: 'Ubiquitin tags proteins for degradation. Highly conserved across eukaryotes and essential for cellular regulation.' },
@@ -98,7 +99,7 @@ const PROTEIN_DATABASE = [
     { pdb: '1BYI', name: 'Beta-lactamase', desc: 'Antibiotic Resistance', color: 'rust',
       info: 'Beta-lactamase confers antibiotic resistance by hydrolyzing beta-lactam rings in penicillin and related antibiotics.' },
     
-    { pdb: '1LDM', name: 'L-Lactate DH', desc: 'Lactate Metabolism', color: 'green',
+    { pdb: '1LDM', name: 'L-Lactate Dehydrogenase', desc: 'Lactate Metabolism', color: 'green',
       info: 'Lactate dehydrogenase catalyzes interconversion of pyruvate and lactate. Critical for anaerobic glycolysis.' },
     { pdb: '1AMY', name: 'Amylase', desc: 'Starch Breakdown', color: 'yellow',
       info: 'Alpha-amylase breaks down starch into sugars. Present in saliva and pancreatic secretions for digestion.' },
@@ -108,25 +109,25 @@ const PROTEIN_DATABASE = [
       info: 'Thrombin converts fibrinogen to fibrin during blood clotting. A key serine protease in the coagulation cascade.' },
     { pdb: '1CHO', name: 'Chymotrypsin', desc: 'Protein Digestion', color: 'orange',
       info: 'Chymotrypsin is a digestive enzyme that breaks down proteins in the small intestine by cleaving peptide bonds.' },
-    { pdb: '2ACE', name: 'Acetylcholin.', desc: 'Neurotransmitter', color: 'cyan',
+    { pdb: '2ACE', name: 'Acetylcholinesterase', desc: 'Neurotransmitter', color: 'cyan',
       info: 'Acetylcholinesterase terminates neurotransmission at cholinergic synapses by rapid hydrolysis of acetylcholine.' },
     
     { pdb: '1CSE', name: 'Subtilisin', desc: 'Bacterial Protease', color: 'tan',
       info: 'Subtilisin is a serine protease from Bacillus. Despite different evolutionary origin, it shares catalytic mechanism with chymotrypsin.' },
     { pdb: '1HEW', name: 'Lysozyme C', desc: 'Bacteriolytic', color: 'purple',
       info: 'Hen egg white lysozyme. One of the most studied enzymes, important in host defense against bacterial infection.' },
-    { pdb: '1RBP', name: 'Retinol BP', desc: 'Vitamin Transport', color: 'yellow',
+    { pdb: '1RBP', name: 'Retinol Binding Protein', desc: 'Vitamin Transport', color: 'yellow',
       info: 'Retinol-binding protein transports vitamin A in blood. Part of the lipocalin family with a characteristic beta-barrel.' },
     { pdb: '1A6M', name: 'Lactoferrin', desc: 'Iron Transport', color: 'rust',
       info: 'Lactoferrin binds iron in milk and mucosal secretions. Provides antimicrobial protection by sequestering iron.' },
-    { pdb: '1CBN', name: 'Carboanhydra.', desc: 'CO2 Hydration', color: 'cyan',
+    { pdb: '1CBN', name: 'Carbonic Anhydrase', desc: 'CO2 Hydration', color: 'cyan',
       info: 'Carbonic anhydrase catalyzes rapid interconversion of CO2 and water to bicarbonate and protons.' },
-    { pdb: '1G3P', name: 'G3P Dehydrog.', desc: 'Glycolysis Enzyme', color: 'green',
+    { pdb: '1G3P', name: 'Glyceraldehyde Dehydrogenase', desc: 'Glycolysis Enzyme', color: 'green',
       info: 'Glyceraldehyde-3-phosphate dehydrogenase catalyzes a key step in glycolysis. Found in all organisms.' },
     
-    { pdb: '1MCT', name: 'Metallothio.', desc: 'Metal Binding', color: 'orange',
+    { pdb: '1MCT', name: 'Metallothionein', desc: 'Metal Binding', color: 'orange',
       info: 'Metallothionein binds heavy metals like zinc and copper. Important for metal homeostasis and detoxification.' },
-    { pdb: '1FAS', name: 'Fatty Acid S.', desc: 'Lipid Synthesis', color: 'pink',
+    { pdb: '1FAS', name: 'Fatty Acid Synthase', desc: 'Lipid Synthesis', color: 'pink',
       info: 'Fatty acid synthase catalyzes synthesis of long-chain fatty acids. A large multifunctional enzyme complex.' },
     { pdb: '1COX', name: 'Cytochrome C', desc: 'Electron Transfer', color: 'blood-red',
       info: 'Cytochrome c oxidase catalyzes the final step in electron transport chain, reducing oxygen to water.' },
@@ -134,7 +135,7 @@ const PROTEIN_DATABASE = [
       info: 'Porin forms beta-barrel channels in bacterial outer membranes, allowing passive diffusion of small molecules.' },
     { pdb: '1IGT', name: 'Trypsin', desc: 'Protein Cleavage', color: 'tan',
       info: 'Trypsin is a digestive enzyme that cleaves proteins at lysine and arginine residues. A model serine protease.' },
-    { pdb: '1CTS', name: 'Citrate Synth', desc: 'Krebs Cycle', color: 'purple',
+    { pdb: '1CTS', name: 'Citrate Synthase', desc: 'Krebs Cycle', color: 'purple',
       info: 'Citrate synthase catalyzes the first step of the Krebs cycle, combining acetyl-CoA with oxaloacetate.' },
 
     { pdb: '1A3N', name: 'Hemoglobin', desc: 'Oxygen Transport', color: 'blood-red', 

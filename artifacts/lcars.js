@@ -69,7 +69,7 @@ class LcarsUI {
       switchMolecule('1EMA', 'GREEN FL.');
 */      
     else if( action == 'Overview')
-      showInfoSection('overview')
+      showInfoSection('overview-basic')
     else if( action == 'Credits')
       showInfoSection('credits')
       //switchMolecule('4HHB', 'HGB HEX');

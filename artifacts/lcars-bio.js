@@ -275,14 +275,22 @@ function updateProteinButtons() {
     }
 }
 
+let bFirstTime = true;
 function updateInfoPanel() {
     const infoContainer = document.getElementById('SubPanel');
     const startIdx = currentBatch * 6;
     const batch = PROTEIN_DATABASE.slice(startIdx, startIdx + 6);
     
-    let html = `
+    let html = bFirstTime ? `
 <section id="info-overview">
-    <h2>SYSTEM OVERVIEW - BATCH ${currentBatch + 1} of ${Math.ceil(PROTEIN_DATABASE.length / 6)}</h2>
+  <h2>Display Selection Panel</h2>
+  <p>Try 'Overview'.</p>
+</section>
+`
+     :
+    `
+<section id="info-overview">
+    <h2>ATLAS NAVIGATION - BATCH ${currentBatch + 1} of ${Math.ceil(PROTEIN_DATABASE.length / 6)}</h2>
     <p><strong>Atlas Scope:</strong> Fundamental Biopolymers</p>
     <p>This module provides access to ${PROTEIN_DATABASE.length} protein structures from the PDB Global Archive.</p>
     <ul>
@@ -292,7 +300,17 @@ function updateInfoPanel() {
     </ul>
 </section>
 `;
-    
+    bFirstTime = false;    
+    html += `<section id="info-overview-basic" style="display:none;">
+<h2>SYSTEM OVERVIEW</h2>
+<p><strong>Atlas Scope:</strong> Fundamental Biopolymers</p>
+<p>This module provides a comparative look at the building blocks of life. From the genetic blueprint (DNA) to the enzymes that facilitate metabolism (TIM) and the hormones that regulate system-wide state (Insulin).</p>
+<ul>
+    <li><strong>Visual Legend:</strong> Use buttons around the main panel to toggle between atomic detail and tertiary structure.</li>
+    <li><strong>Bio-Data:</strong> Structural data is retrieved in real-time from the PDB Global Archive.</li>
+</ul>
+</section>`
+
     batch.forEach(protein => {
         const sectionId = protein.name.toLowerCase().replace(/[^a-z0-9]/g, '');
         let inner = protein.html ?? 

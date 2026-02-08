@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniGrid — Matrix Viewer</title>
+  <link rel="icon" type="image/x-icon" href="../wheel.ico">
+  <script src="../js/utilities/nav.js"></script>
+  <link rel="stylesheet" href="omnibase.css">
+  <style>
+    /* OmniGrid-specific: Canvas fills container */
+    .chart-container {
+      cursor: grab;
+    }
+    .chart-container:active {
+      cursor: grabbing;
+    }
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #16213e;
+    }
+    /* Size selector buttons */
+    .size-selector {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .size-selector button {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #0f0f23;
+      color: #888;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .size-selector button:hover {
+      border-color: #4fc3f7;
+      color: #eee;
+    }
+    .size-selector button.active {
+      border-color: #4fc3f7;
+      background: rgba(79, 195, 247, 0.15);
+      color: #4fc3f7;
+    }
+    /* Info display */
+    .grid-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #888;
+      margin-top: 8px;
+    }
+    .grid-info .value {
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>OmniGrid</h1>
+    <p class="subtitle">Matrix and heatmap viewer. Drag to pan, scroll to zoom.</p>
+  </header>
+  
+  <div class="layout">
+    <div class="chart-container" id="chart-container">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="controls-wrapper">
+      <div class="multiscroller-strip" id="multiscroller"></div>
+      <div class="controls" id="controls"></div>
+    </div>
+  </div>
+
+  <script src="csv-data.js"></script>
+  <script src="warped-polygon.js"></script>
+  <script src="omnigrid.js"></script>
+  <script src="omnibase.js"></script>
+  <script>
+  (function() {
+    // ============================================================
+    // Sample Data Options
+    // ============================================================
+    
+    const SAMPLE_OPTIONS = [
+      { value: '', label: '-- Select sample --' },
+      { value: 'pam250', label: 'PAM250 Matrix' },
+      { value: 'cities', label: 'City Distances' },
+      { value: 'random', label: 'Random Matrix' },
+      { value: 'wave', label: 'Wave Pattern' },
+      { value: 'multiplication', label: 'Multiplication Table' },
+      { value: 'gradient', label: 'Diagonal Gradient' }
+    ];
+    
+    const COLOR_SCHEMES = [
+      { value: 'red-green', label: 'Red ↔ Green' },
+      { value: 'blue-red', label: 'Blue ↔ Red' },
+      { value: 'purple-orange', label: 'Purple ↔ Orange' },
+      { value: 'cyan-magenta', label: 'Cyan ↔ Magenta' }
+    ];
+    
+    // Samples that support size selection
+    const SIZED_SAMPLES = ['random', 'wave', 'multiplication', 'gradient', 'cities'];
+    
+    // ============================================================
+    // Slider Configuration
+    // ============================================================
+    
+    const SLIDER_CONFIG = [
+      { 
+        group: 'Load Data', 
+        id: 'load', 
+        abbrev: 'Load',
+        type: 'filedrop',
+        label: 'Drop CSV file or click',
+        accept: '.csv,.txt',
+        onDrop: (files, base) => {
+          if (files[0]) loadFile(files[0]);
+        }
+      },
+      {
+        group: 'Sample Data',
+        id: 'sample',
+        abbrev: 'Smp',
+        type: 'select',
+        selectId: 'sampleSelect',
+        options: SAMPLE_OPTIONS,
+        onChange: (value, base) => {
+          if (value) {
+            loadSample(value, currentSize);
+          }
+        }
+      },
+      {
+        group: 'Sample Data',
+        id: 'sampleSize',
+        type: 'custom',
+        build: (groupEl, base) => {
+          const container = document.createElement('div');
+          container.className = 'size-selector';
+          container.id = 'sizeSelector';
+          
+          ['small', 'medium', 'large'].forEach(size => {
+            const btn = document.createElement('button');
+            btn.textContent = size[0].toUpperCase();
+            btn.title = size;
+            btn.dataset.size = size;
+            if (size === 'medium') btn.classList.add('active');
+            btn.addEventListener('click', () => {
+              container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              currentSize = size;
+              const sampleSelect = document.getElementById('sampleSelect');
+              if (sampleSelect.value) {
+                loadSample(sampleSelect.value, size);
+              }
+            });
+            container.appendChild(btn);
+          });
+          
+          groupEl.appendChild(container);
+        }
+      },
+      { group: 'Presets', id: 'presets', abbrev: 'Pre', type: 'presets' },
+      { 
+        group: 'Data Options', 
+        id: 'dataOpts', 
+        abbrev: 'Dat',
+        sliders: [
+          { id: 'distanceMatrix', label: 'Distance matrix', min: 0, max: 1, step: 0.01, default: 0 },
+          { id: 'headersAffectWidth', label: 'Headers affect width', min: 0, max: 1, step: 0.01, default: 0 }
+        ]
+      },
+      { 
+        group: 'Display', 
+        id: 'display', 
+        abbrev: 'Dis',
+        sliders: [
+          { id: 'colorTarget', label: 'Color target (bg↔fg)', min: 0, max: 1, step: 0.01, default: 0 },
+          { id: 'smoothGradient', label: 'Smooth gradient', min: 0, max: 1, step: 0.01, default: 1 },
+          { id: 'blobMode', label: 'Blob mode', min: 0, max: 1, step: 0.01, default: 0 },
+          { id: 'decimalPlaces', label: 'Decimal places', min: 0, max: 6, step: 1, default: 2, format: 'int' }
+        ]
+      },
+      {
+        group: 'Display',
+        id: 'colorScheme',
+        type: 'select',
+        selectId: 'colorScheme',
+        label: 'Color scheme',
+        options: COLOR_SCHEMES,
+        onChange: (value, base) => {
+          renderer.options.colorScheme = value;
+          render();
+        }
+      },
+      { 
+        group: 'View', 
+        id: 'view', 
+        abbrev: 'View',
+        sliders: [
+          { id: 'zoom', label: 'Zoom', min: 0.01, max: 2, step: 0.01, default: 1 }
+        ]
+      },
+      {
+        group: 'View',
+        id: 'viewActions',
+        type: 'custom',
+        build: (groupEl, base) => {
+          // Reset button
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.textContent = 'Reset View';
+          btn.addEventListener('click', () => {
+            renderer.resetView();
+            base.updateSlider('zoom', 1, false);
+            render();
+          });
+          groupEl.appendChild(btn);
+          
+          // Info display
+          const info = document.createElement('div');
+          info.className = 'grid-info';
+          info.innerHTML = `
+            <span>Visible: <span class="value" id="infoVisible">0×0</span></span>
+            <span>Data: <span class="value" id="infoTotal">0×0</span></span>
+          `;
+          groupEl.appendChild(info);
+        }
+      }
+    ];
+    
+    // ============================================================
+    // State
+    // ============================================================
+    
+    let currentSize = 'medium';
+    const canvas = document.getElementById('canvas');
+    const container = document.getElementById('chart-container');
+    const renderer = new GridRenderer(canvas);
+    
+    // ============================================================
+    // Resize handling
+    // ============================================================
+    
+    function resizeCanvas() {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      TextUtils.clearCache();
+      render();
+    }
+    
+    // ============================================================
+    // Data loading
+    // ============================================================
+    
+    function loadFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new CSVData(e.target.result);
+          renderer.setData(data);
+          
+          // Auto-detect distance matrix
+          const isDistance = detectDistanceMatrix(data);
+          if (isDistance) {
+            base.updateSlider('distanceMatrix', 1, false);
+            renderer.options.distanceMatrix = 1;
+          } else {
+            base.updateSlider('distanceMatrix', 0, false);
+            renderer.options.distanceMatrix = 0;
+          }
+          
+          // Clear sample selection
+          document.getElementById('sampleSelect').value = '';
+          
+          render();
+        } catch (err) {
+          alert('Error parsing CSV: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    function loadSample(sampleId, size) {
+      if (!SampleGenerators[sampleId]) return;
+      
+      const needsSize = SIZED_SAMPLES.includes(sampleId);
+      const data = needsSize ? SampleGenerators[sampleId](size) : SampleGenerators[sampleId]();
+      renderer.setData(data);
+      
+      // Auto-set distance matrix for certain samples
+      const isDistanceSample = sampleId === 'cities' || sampleId === 'pam250';
+      base.updateSlider('distanceMatrix', isDistanceSample ? 1 : 0, false);
+      renderer.options.distanceMatrix = isDistanceSample ? 1 : 0;
+      
+      render();
+    }
+    
+    function detectDistanceMatrix(data) {
+      if (data.rowCount !== data.colCount) return false;
+      for (let i = 0; i < data.rowCount; i++) {
+        if (data.getRowName(i) !== data.getColName(i)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    // ============================================================
+    // Rendering
+    // ============================================================
+    
+    function render() {
+      renderer.render();
+      updateInfo();
+    }
+    
+    function updateInfo() {
+      if (renderer.gridData) {
+        const { startRow, endRow, startCol, endCol } = renderer.getVisibleRange();
+        const visRows = endRow - startRow + 1;
+        const visCols = endCol - startCol + 1;
+        document.getElementById('infoVisible').textContent = `${visRows}×${visCols}`;
+        document.getElementById('infoTotal').textContent = 
+          `${renderer.gridData.rowCount}×${renderer.gridData.colCount}`;
+      } else {
+        document.getElementById('infoVisible').textContent = '0×0';
+        document.getElementById('infoTotal').textContent = '0×0';
+      }
+    }
+    
+    // ============================================================
+    // Canvas pan/zoom
+    // ============================================================
+    
+    let isDragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        renderer.pan(dx, dy);
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        render();
+      }
+    });
+    
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('mouseleave', () => isDragging = false);
+    
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      renderer.zoomAt(factor, x, y);
+      
+      // Update zoom slider
+      base.updateSlider('zoom', renderer.camera.zoom, false);
+      
+      render();
+    }, { passive: false });
+    
+    // ============================================================
+    // Initialize OmniBase
+    // ============================================================
+    
+    const base = new OmniBase({
+      elements: {
+        container: container,
+        controls: document.getElementById('controls'),
+        multiscroller: document.getElementById('multiscroller')
+      },
+      sliderConfig: SLIDER_CONFIG,
+      presets: OMNIGRID_PRESETS,
+      defaultPreset: 'Standard',
+      enablePanZoom: false, // We handle our own pan/zoom
+      aspectRatio: 1,
+      hintHtml: '<b>Drag</b> to pan. <b>Scroll</b> to zoom.<br><b>distanceMatrix</b>: fades mirrored cells<br><b>colorTarget</b>: 0=background, 1=foreground',
+      
+      onRender: (params, panZoom, instance) => {
+        // Sync renderer options from params
+        renderer.options.distanceMatrix = params.distanceMatrix;
+        renderer.options.headersAffectWidth = params.headersAffectWidth;
+        renderer.options.colorTarget = params.colorTarget;
+        renderer.options.smoothGradient = params.smoothGradient;
+        renderer.options.blobMode = params.blobMode;
+        renderer.options.decimalPlaces = Math.round(params.decimalPlaces);
+        
+        render();
+      },
+      
+      onParamChange: (id, value, isData, instance) => {
+        if (id === 'zoom') {
+          renderer.setZoom(value);
+          render();
+        }
+        if (id === 'decimalPlaces') {
+          renderer.calculateBaseDimensions();
+        }
+      },
+      
+      onResize: (instance) => {
+        resizeCanvas();
+      }
+    });
+    
+    // Initial setup
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Load default sample
+    loadSample('cities', 'medium');
+    document.getElementById('sampleSelect').value = 'cities';
+    
+  })();
+  </script>
+</body>
+</html>

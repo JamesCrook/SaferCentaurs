@@ -1,23 +1,22 @@
-// Handle LCARS block interactions with button lighting
 function activateBlocks() {
     const blocks = document.querySelectorAll('.lcars-block');
     
     blocks.forEach(block => {
-        // Remove any existing click listeners by cloning
+        // 1. Clear ALL previous listeners and inline styles by cloning
         const newBlock = block.cloneNode(true);
+        // Reset any inline background color left over from previous hovers
+        newBlock.style.backgroundColor = ''; 
         block.parentNode.replaceChild(newBlock, block);
         
         newBlock.addEventListener('click', function(event) {
             const action = this.getAttribute('data-group');
             const pdbId = this.getAttribute('data-pdb');
-            
-            // Light up all blocks with the same data-group
             lightUpGroup(action);
-            
-            // Handle the action
             handleBlockClick(action, pdbId, event);
         });
     });
+
+    // 2. Now that the DOM is "fresh", bind the hover logic
     hoverEnableBlocks();
 }
 
@@ -45,53 +44,36 @@ const lighten = (hex, amt = 40) => {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };
 
+
 function hoverEnableBlocks() {
-  const blocks = new Map();
-  document.querySelectorAll('.lcars-block[data-group]').forEach(el => {
-    const group = el.dataset.group;
+    const colorMap = new Map();
 
-    // We could highlight all blocks of the same group (i.e. command) together,
-    // However it is a cooler look if we highlight all blcoks of the same colour
-    const rgbArray = getComputedStyle(el).backgroundColor.match(/\d+/g).map(
-      Number);
-    const colorKey = rgbArray.join(',');
+    // Query the "fresh" blocks created in activateBlocks
+    document.querySelectorAll('.lcars-block[data-group]').forEach(el => {
+        // Get current computed color
+        const style = getComputedStyle(el);
+        const colorKey = style.backgroundColor; // Simplified key
 
-    if(!blocks.has(colorKey)) blocks.set(colorKey, []);
-    blocks.get(colorKey).push({
-      el,
-      orig: rgbArray
-
+        if (!colorMap.has(colorKey)) colorMap.set(colorKey, []);
+        colorMap.get(colorKey).push(el);
     });
-/*    
-    el.onclick = Lcars.doCommand;
-    if(group) {
-      if(!el.classList.contains('stub'))
-        el.innerText = group;
-    }
-*/    
-  });
 
-  blocks.forEach(group => {
-    const hex =
-      `#${group[0].orig.map(x => x.toString(16).padStart(2, '0')).join('')}`;
-    const hover = lighten(hex);
-    group.forEach(({
-      el,
-      orig
-    }) => {
-      el.addEventListener('mouseenter', () =>
-        group.forEach(({
-          el
-        }) => el.style.backgroundColor = hover));
-      el.addEventListener('mouseleave', () =>
-        group.forEach(({
-          el,
-          orig
-        }) => el.style.backgroundColor = ''));
+    colorMap.forEach((elements, colorKey) => {
+        // Calculate hover color once per group
+        const rgbArray = colorKey.match(/\d+/g).map(Number);
+        const hex = `#${rgbArray.map(x => x.toString(16).padStart(2, '0')).join('')}`;
+        const hoverColor = lighten(hex, 40);
+
+        elements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                elements.forEach(target => target.style.backgroundColor = hoverColor);
+            });
+            el.addEventListener('mouseleave', () => {
+                elements.forEach(target => target.style.backgroundColor = '');
+            });
+        });
     });
-  });
-};
-
+}
 
 
 

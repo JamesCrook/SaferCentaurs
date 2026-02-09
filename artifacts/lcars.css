@@ -54,12 +54,17 @@
     --lcars-beige: #be9a86;
     --lcars-red: #e74c3c;
     --lcars-blood-red: #c41212;
+    --lcars-dark-red: #8b0000;
     --lcars-blue: #8fc0e0;
+    --lcars-teal: #8f80e0;
     --lcars-green: #2ecc71;
     --lcars-yellow: #eed071;
+    --lcars-gold: #ffcc33;
+    --lcars-lime: #99ff66;
     --lcars-cyan: #46c6ad;
     --lcars-pink: #e398bd;
-    
+    --lcars-silver: #bdc3c7;
+
     --lcars-bg: black;
     --lcars-text: white;
     --lcars-text-on-block: black;
@@ -318,19 +323,25 @@ body {
    Example: <div class="block sblock bl purple">
    ============================================================================= */
 
-.lcars-purple     { background-color: var(--lcars-purple); }
-.lcars-tan        { background-color: var(--lcars-tan); }
-.lcars-rust       { background-color: var(--lcars-rust); }
-.lcars-orange     { background-color: var(--lcars-orange); }
-.lcars-beige      { background-color: var(--lcars-beige); }
-.lcars-red        { background-color: var(--lcars-red); }
-.lcars-blood-red  { background-color: var(--lcars-blood-red); }
-.lcars-blue       { background-color: var(--lcars-blue); }
-.lcars-green      { background-color: var(--lcars-green); }
-.lcars-yellow     { background-color: var(--lcars-yellow); }
-.lcars-cyan       { background-color: var(--lcars-cyan); }
-.lcars-pink       { background-color: var(--lcars-pink); }
-
+/* Helper Classes */
+.lcars-purple    { background-color: var(--lcars-purple); }
+.lcars-tan       { background-color: var(--lcars-tan); }
+.lcars-rust      { background-color: var(--lcars-rust); }
+.lcars-orange    { background-color: var(--lcars-orange); }
+.lcars-beige     { background-color: var(--lcars-beige); }
+.lcars-red       { background-color: var(--lcars-red); }
+.lcars-blood-red { background-color: var(--lcars-blood-red); }
+.lcars-dark-red  { background-color: var(--lcars-dark-red); }
+.lcars-blue      { background-color: var(--lcars-blue); }
+.lcars-teal      { background-color: var(--lcars-teal); }
+.lcars-green     { background-color: var(--lcars-green); }
+.lcars-yellow    { background-color: var(--lcars-yellow); }
+.lcars-gold      { background-color: var(--lcars-gold); }
+.lcars-lime      { background-color: var(--lcars-lime); }
+.lcars-cyan      { background-color: var(--lcars-cyan); }
+.lcars-pink      { background-color: var(--lcars-pink); }
+.lcars-silver    { background-color: var(--lcars-silver); }    
+    
 /* =============================================================================
    7a. Wipes
    

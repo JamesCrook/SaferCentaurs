@@ -413,6 +413,20 @@ class GridRenderer {
     return { startRow, endRow, startCol, endCol };
   }
 
+  permutedRow(r) {
+    const rowCount = this.gridData.rowCount;
+    const k = this.options.reverseRows;
+    const splitPoint = Math.floor(k * rowCount);
+    return (r < splitPoint) ? (rowCount - 1) - r : r - splitPoint;
+  }
+
+  permutedCol(c) {
+    const colCount = this.gridData.colCount;
+    const k = this.options.reverseCols;
+    const splitPoint = Math.floor(k * colCount);
+    return (c < splitPoint) ? (colCount - 1) - c : c - splitPoint;
+  }
+
   render() {
     const ctx = this.ctx;
     const { width, height } = this.canvas;
@@ -446,13 +460,14 @@ class GridRenderer {
     };
 
     const range = this.gridData.globalRange;
-    const distanceMode = this.options.distanceMatrix > 0 && 
-                         this.gridData.rowCount === this.gridData.colCount;
+    const distanceMode = this.gridData.rowCount === this.gridData.colCount;
+    const reverseCols = this.options.reverseCols > 0.5;
     
     // Calculate column X positions
     const colX = [0];
     for (let c = 0; c < colWidths.length; c++) {
-      colX[c + 1] = colX[c] + colWidths[c];
+      const displayCol = this.permutedCol(c);
+      colX[c + 1] = colX[c] + colWidths[displayCol];
     }
     
     ctx.save();
@@ -473,33 +488,41 @@ class GridRenderer {
     const useSmooth = this.options.smoothGradient > 0.5;
     
     for (let r = startRow; r <= endRow; r++) {
-      const displayRow = distanceMode ? (this.gridData.rowCount - 1 - r) : r;
+      const displayRow = this.permutedRow( r );
       const y = r * cellHeight;
       
       for (let c = startCol; c <= endCol; c++) {
-        const displayCol = distanceMode ? (this.gridData.colCount - 1 - c) : c;
+        const displayCol = this.permutedCol(c);
         const x = colX[c];
-        const w = colWidths[c];
-        const value = this.gridData.getValue(displayRow, c);
-        const isNum = this.gridData.isNumeric(displayRow, c);
+        const w = colWidths[displayCol];
+        const value = this.gridData.getValue(displayRow, displayCol);
+        const isNum = this.gridData.isNumeric(displayRow, displayCol);
         
         // Calculate cell opacity for distance matrix mode
         let cellOpacity = 1;
-        if (distanceMode && isNum && displayRow < c) {
-          const mirrorValue = this.gridData.getValue(c, displayRow);
-          if (mirrorValue === value && isVisible(displayCol, displayRow)) {
-            // This is an upper triangle cell with matching mirror
-            // Fade based on distanceMatrix slider value
-            cellOpacity = 1 - this.options.distanceMatrix;
-            if (cellOpacity < 0.01) continue; // Skip if fully transparent
-          }
+        if (distanceMode && isNum && displayRow < displayCol) {
+          // This is an upper triangle cell with matching mirror
+          // Fade based on distanceMatrix slider value
+          cellOpacity = 1 - this.options.distanceMatrix;
+          if (cellOpacity < 0.01) continue; // Skip if fully transparent
         }
         
         // Background color
         let bgColor = [30, 40, 60];
         let fgColor = [255, 255, 255];
         
-        if (isNum) {
+        const mode = true;
+        if (isNum && mode) {
+          const valueColor = ColorEngine.getColor(value, range, this.options.colorScheme, useSmooth);
+          // Blend between background and foreground coloring
+          const colorTarget = this.options.colorTarget;
+          const brightness = (valueColor[0] * 299 + valueColor[1] * 587 + valueColor[2] * 114) / 1000;
+          const contrastColor = brightness > 128 ? [0, 0, 0] : [255, 255, 255];
+          bgColor = ColorEngine.lerp( valueColor, bgColor, colorTarget )
+          fgColor = ColorEngine.lerp( contrastColor, valueColor, colorTarget )
+        }
+
+        if( isNum && !mode ){
           const valueColor = ColorEngine.getColor(value, range, this.options.colorScheme, useSmooth);
           // Blend between background and foreground coloring
           const colorTarget = this.options.colorTarget;
@@ -596,9 +619,10 @@ class GridRenderer {
       ctx.fillStyle = '#ccc';
       
       for (let c = startCol; c <= endCol; c++) {
+        const displayCol = this.permutedCol(c);
         const x = colX[c];
-        const w = colWidths[c];
-        const name = this.gridData.getColName(c);
+        const w = colWidths[displayCol];
+        const name = this.gridData.getColName(displayCol);
         const font = `${headerFontSize}px sans-serif`;
         const displayText = TextUtils.truncate(ctx, name, w - 4, font);
         if (displayText) {
@@ -623,7 +647,7 @@ class GridRenderer {
       
       for (let r = startRow; r <= endRow; r++) {
         const y = r * cellHeight;
-        const displayRow = distanceMode ? (this.gridData.rowCount - 1 - r) : r;
+        const displayRow = this.permutedRow( r );
         const name = this.gridData.getRowName(displayRow);
         const font = `${headerFontSize}px sans-serif`;
         const displayText = TextUtils.truncate(ctx, name, this.rowNameWidth - 8, font);
@@ -747,7 +771,9 @@ class GridRenderer {
 
 const OMNIGRID_PRESETS = {
   'Standard': {
-    distanceMatrix: 0,
+    distanceMatrix: 0.0,
+    reverseRows: 0.0,
+    reverseCols: 0.0,
     headersAffectWidth: 0,
     colorTarget: 0,
     smoothGradient: 1,
@@ -755,15 +781,29 @@ const OMNIGRID_PRESETS = {
     decimalPlaces: 2
   },
   'Heatmap': {
-    distanceMatrix: 0,
+    distanceMatrix: 0.0,
+    reverseRows: 0.0,
+    reverseCols: 0.0,
     headersAffectWidth: 0,
     colorTarget: 0,
     smoothGradient: 1,
     blobMode: 0,
     decimalPlaces: 0
   },
+  'Inverse': {
+    distanceMatrix: 0.0,
+    reverseRows: 0.0,
+    reverseCols: 0.0,
+    headersAffectWidth: 0,
+    colorTarget: 1,
+    smoothGradient: 1,
+    blobMode: 0,
+    decimalPlaces: 2
+  },
   'Bubble': {
-    distanceMatrix: 0,
+    distanceMatrix: 0.0,
+    reverseRows: 0.0,
+    reverseCols: 0.0,
     headersAffectWidth: 0,
     colorTarget: 0,
     smoothGradient: 1,
@@ -771,7 +811,9 @@ const OMNIGRID_PRESETS = {
     decimalPlaces: 2
   },
   'Distance': {
-    distanceMatrix: 1,
+    distanceMatrix: 0.4,
+    reverseRows: 1.0,
+    reverseCols: 0.0,
     headersAffectWidth: 1,
     colorTarget: 0,
     smoothGradient: 1,

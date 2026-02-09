@@ -172,6 +172,8 @@
         abbrev: 'Dat',
         sliders: [
           { id: 'distanceMatrix', label: 'Distance matrix', min: 0, max: 1, step: 0.01, default: 0 },
+          { id: 'reverseRows', label: 'Reverse Rows', min: 0, max: 1, step: 0.01, default: 0 },
+          { id: 'reverseCols', label: 'Reverse Cols', min: 0, max: 1, step: 0.01, default: 0 },
           { id: 'headersAffectWidth', label: 'Headers affect width', min: 0, max: 1, step: 0.01, default: 0 }
         ]
       },
@@ -263,27 +265,29 @@
       reader.onload = (e) => {
         try {
           const data = new CSVData(e.target.result);
-          renderer.setData(data);
-          
-          // Auto-detect distance matrix
-          const isDistance = detectDistanceMatrix(data);
-          if (isDistance) {
-            base.updateSlider('distanceMatrix', 1, false);
-            renderer.options.distanceMatrix = 1;
-          } else {
-            base.updateSlider('distanceMatrix', 0, false);
-            renderer.options.distanceMatrix = 0;
-          }
-          
+        
           // Clear sample selection
           document.getElementById('sampleSelect').value = '';
-          
-          render();
+          setSlidesAndRender(data);
         } catch (err) {
           alert('Error parsing CSV: ' + err.message);
         }
       };
       reader.readAsText(file);
+    }
+
+    function setSlidesAndRender(data){
+      renderer.setData(data);
+      // Auto-detect distance matrix
+      const isDistance = detectDistanceMatrix(data);
+      const dm = isDistance? 0.4:0;
+      base.updateSlider('distanceMatrix', dm, false);
+      renderer.options.distanceMatrix = dm;
+      const rr = isDistance? 1.0:0;
+      base.updateSlider('reverseRows', rr, false);
+      renderer.options.reverseRows = rr;
+      render();
+
     }
     
     function loadSample(sampleId, size) {
@@ -291,12 +295,7 @@
       
       const needsSize = SIZED_SAMPLES.includes(sampleId);
       const data = needsSize ? SampleGenerators[sampleId](size) : SampleGenerators[sampleId]();
-      renderer.setData(data);
-      
-      // Auto-set distance matrix for certain samples
-      const isDistanceSample = sampleId === 'cities' || sampleId === 'pam250';
-      base.updateSlider('distanceMatrix', isDistanceSample ? 1 : 0, false);
-      renderer.options.distanceMatrix = isDistanceSample ? 1 : 0;
+      setSlidesAndRender(data);
       
       render();
     }
@@ -395,11 +394,13 @@
       
       onRender: (params, panZoom, instance) => {
         // Sync renderer options from params
+        Object.assign(renderer.options, params);
+        /*
         renderer.options.distanceMatrix = params.distanceMatrix;
         renderer.options.headersAffectWidth = params.headersAffectWidth;
         renderer.options.colorTarget = params.colorTarget;
         renderer.options.smoothGradient = params.smoothGradient;
-        renderer.options.blobMode = params.blobMode;
+        renderer.options.blobMode = params.blobMode;*/
         renderer.options.decimalPlaces = Math.round(params.decimalPlaces);
         
         render();

@@ -12,7 +12,7 @@ const DNA_INFO =
 
 // Expanded protein database
 const PROTEIN_DATABASE = [
-    { pdb: '3ARC', name: 'Chlorophyll', desc: 'Light Harvesting', color: 'green',
+    { pdb: '3WU2', name: 'Chlorophyll', desc: 'Light Harvesting', color: 'green',
       info: 'Photosystem II captures photons from sunlight to energize electrons. It is the only known biological system that can oxidize water into molecular oxygen.',
       html: `   <h2>CHLOROPHYLL / PSII</h2>
     <p><strong>Primary Function:</strong> Light Harvesting / Energy Conversion</p>
@@ -89,7 +89,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1GFL', name: 'GB1 Domain', desc: 'Protein Binding', color: 'cyan',
+        pdb: '2GB1', name: 'GB1 Domain', desc: 'Protein Binding', color: 'cyan',
         info: 'The GB1 domain is a small, incredibly stable protein fold from Streptococcal Protein G, widely used as a model for folding studies.',
         html: `<h2>GB1 DOMAIN</h2>
         <p><strong>Primary Function:</strong> Immunoglobulin Binding</p>
@@ -100,7 +100,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1AKI', name: 'Ribonuclease', desc: 'RNA Degradation', color: 'orange',
+        pdb: '3RN3', name: 'Ribonuclease', desc: 'RNA Degradation', color: 'orange',
         info: 'Ribonuclease A (RNase A) is an enzyme that cleaves single-stranded RNA. It was a primary subject for early protein folding theories.',
         html: `<h2>RIBONUCLEASE A</h2>
         <p><strong>Primary Function:</strong> RNA Degradation</p>
@@ -111,7 +111,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1HHO', name: 'Immunoglobulin', desc: 'Antibody Fragment', color: 'blue',
+        pdb: '1IGY', name: 'Immunoglobulin', desc: 'Antibody Fragment', color: 'blue',
         info: 'Antibodies are the primary recognition molecules of the adaptive immune system, identifying and neutralizing foreign pathogens.',
         html: `<h2>IMMUNOGLOBULIN (IgG)</h2>
         <p><strong>Primary Function:</strong> Adaptive Immune Recognition</p>
@@ -122,7 +122,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1LDM', name: 'L-Lactate Dehydrogenase', desc: 'Lactate Metabolism', color: 'green',
+        pdb: '1I10', name: 'L-Lactate Dehydrogenase', desc: 'Lactate Metabolism', color: 'green',
         info: 'LDH catalyzes the conversion of lactate to pyruvate, a critical step in anaerobic respiration and glycolysis.',
         html: `<h2>LACTATE DEHYDROGENASE</h2>
         <p><strong>Primary Function:</strong> Anaerobic Energy Metabolism</p>
@@ -199,7 +199,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1G3P', name: 'Glyceraldehyde Dehydrogenase', desc: 'Glycolysis Enzyme', color: 'green',
+        pdb: '1GPD', name: 'Glyceraldehyde Dehydrogenase', desc: 'Glycolysis Enzyme', color: 'green',
         info: 'GAPDH is a key enzyme in the energy-releasing phase of glycolysis, found in nearly all living organisms.',
         html: `<h2>GAPDH</h2>
         <p><strong>Primary Function:</strong> Glycolytic Energy Production</p>
@@ -210,7 +210,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1FAS', name: 'Fatty Acid Synthase', desc: 'Lipid Synthesis', color: 'pink',
+        pdb: '2VZ8', name: 'Fatty Acid Synthase', desc: 'Lipid Synthesis', color: 'pink',
         info: 'FAS is a massive multi-enzyme machine that builds long-chain fatty acids from simple building blocks.',
         html: `<h2>FATTY ACID SYNTHASE</h2>
         <p><strong>Primary Function:</strong> Lipid (Fat) Synthesis</p>
@@ -221,7 +221,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1IGT', name: 'Trypsin', desc: 'Protein Cleavage', color: 'tan',
+        pdb: '2PTN', name: 'Trypsin', desc: 'Protein Cleavage', color: 'tan',
         info: 'Trypsin is a powerful digestive enzyme that cleaves proteins at the amino acids Lysine and Arginine.',
         html: `<h2>TRYPSIN</h2>
         <p><strong>Primary Function:</strong> Proteolysis (Digestion)</p>
@@ -253,17 +253,7 @@ const PROTEIN_DATABASE = [
             <li><strong>History:</strong> Discovered by Alexander Fleming before he discovered penicillin.</li>
         </ul>` 
     },
-    { 
-        pdb: '1MBO', name: 'Myoglobin', desc: 'Oxygen Storage', color: 'blood-red',
-        info: 'Myoglobin stores oxygen in muscle cells, providing a reserve for intense activity. It was the first protein structure ever solved.',
-        html: `<h2>MYOGLOBIN</h2>
-        <p><strong>Primary Function:</strong> Muscle O₂ Storage</p>
-        <p>Unlike Hemoglobin, Myoglobin consists of a single polypeptide chain. It has a very high affinity for oxygen, ensuring muscles have a backup supply.</p>
-        <ul>
-            <li><strong>Structure:</strong> A globular protein with 8 alpha-helices and a single heme group.</li>
-            <li><strong>Milestone:</strong> Solved by John Kendrew in 1958 using X-ray diffraction.</li>
-        </ul>` 
-    },
+
     
     { 
         pdb: '2HHB', name: 'Deoxy Hemoglobin', desc: 'O₂ Unbound State', color: 'rust',
@@ -277,8 +267,8 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1ATP', name: 'ATP Synthase', desc: 'Energy Production', color: 'gold',
-        info: 'The "world\'s smallest rotary motor," this enzyme produces ATP from ADP using a proton gradient across a membrane.',
+        pdb: '6B8H', name: 'ATP Synthase', desc: 'Energy Production', color: 'gold',
+        info: 'The "world\'s smallest turbine," this enzyme produces ATP from ADP using a proton gradient across a membrane.',
         html: `<h2>ATP SYNTHASE</h2>
         <p><strong>Primary Function:</strong> Cellular Energy Synthesis</p>
         <p>This massive complex uses the flow of protons (like water through a turbine) to mechanically rotate and catalyze the creation of ATP.</p>
@@ -299,7 +289,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1BYI', name: 'Beta-lactamase', desc: 'Antibiotic Resistance', color: 'orange',
+        pdb: '1TEM', name: 'Beta-lactamase', desc: 'Antibiotic Resistance', color: 'orange',
         info: 'Beta-lactamases are enzymes produced by bacteria that provide multi-resistance to beta-lactam antibiotics like penicillin.',
         html: `<h2>BETA-LACTAMASE</h2>
         <p><strong>Primary Function:</strong> Antibiotic Deactivation</p>
@@ -310,7 +300,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1THM', name: 'Thrombin', desc: 'Blood Clotting', color: 'blood-red',
+        pdb: '1PPB', name: 'Thrombin', desc: 'Blood Clotting', color: 'blood-red',
         info: 'Thrombin is a serine protease that converts soluble fibrinogen into insoluble fibrin strands, forming a blood clot.',
         html: `<h2>THROMBIN</h2>
         <p><strong>Primary Function:</strong> Coagulation Cascade</p>
@@ -332,7 +322,7 @@ const PROTEIN_DATABASE = [
         </ul>` 
     },
     { 
-        pdb: '1POH', name: 'Porin', desc: 'Membrane Channel', color: 'blue',
+        pdb: '2POR', name: 'Porin', desc: 'Membrane Channel', color: 'blue',
         info: 'Porins are beta-barrel proteins that cross a cellular membrane and act as a pore through which molecules can diffuse.',
         html: `<h2>PORIN</h2>
         <p><strong>Primary Function:</strong> Passive Molecular Transport</p>
@@ -350,7 +340,7 @@ const PROTEIN_DATABASE = [
         <p>Myoglobin facilitates oxygen diffusion and serves as a reserve in muscle tissues. It has a higher affinity for oxygen than hemoglobin, allowing it to "grab" oxygen as it is released from the blood.</p>
         <ul>
             <li><strong>Historic Milestone:</strong> The first protein structure ever solved via X-ray crystallography (1958).</li>
-            <li><strong>Structure:</strong> A single polypeptide chain with eight alpha-helices surrounding a central heme group.</li>
+            <li><strong>Structure:</strong> A globular protein with 8 alpha-helices and a single heme group.</li>
         </ul>` 
     },
     { 
@@ -464,7 +454,7 @@ const PROTEIN_DATABASE = [
             <li><strong>Structure:</strong> Composed of 24 subunits consisting of "Heavy" (H) and "Light" (L) chains.</li>
         </ul>` 
     },
- /*   { 
+   { 
         pdb: '6W4S', name: 'Ferroportin', desc: 'Iron Export', color: 'teal',
         info: 'Ferroportin is the only known protein that exports iron from the inside of a cell to the outside.',
         html: `<h2>FERROPORTIN</h2>
@@ -475,7 +465,7 @@ const PROTEIN_DATABASE = [
             <li><strong>Symmetry:</strong> A transmembrane transporter with two lobes that switch between inward and outward-facing states.</li>
         </ul>` 
     },
-*/
+
 ];
 
 window.onload = function() {

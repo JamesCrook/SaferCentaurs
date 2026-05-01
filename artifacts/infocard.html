@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfoCard Demo</title>
+<link rel="icon" type="image/x-icon" href="../wheel.ico">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0e0e24;
+    color: #b0b8c8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 200vh; /* scrollable to test positioning */
+  }
+
+  .demo-panel {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 0 24px;
+  }
+
+  h1 {
+    color: #e0e8f0;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 13px;
+    opacity: 0.55;
+    margin-bottom: 36px;
+  }
+
+  h2 {
+    color: #8090a8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 32px 0 12px;
+  }
+
+  /* ── Demo items ────────────────────────────── */
+
+  .item-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .item {
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    cursor: default;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .item:hover {
+    border-color: rgba(79, 195, 247, 0.25);
+    background: rgba(79, 195, 247, 0.04);
+  }
+  .item-name {
+    color: #e0e8f0;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .item-desc {
+    font-size: 12px;
+    opacity: 0.5;
+  }
+
+  /* ── Colour swatches ───────────────────────── */
+
+  .swatch-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: default;
+    transition: transform 0.15s;
+  }
+  .swatch:hover { transform: scale(1.1); }
+
+  /* ── Paragraph targets ─────────────────────── */
+
+  .word-target {
+    color: #4fc3f7;
+    border-bottom: 1px dotted rgba(79,195,247,0.3);
+    cursor: help;
+  }
+
+  .spacer { height: 300px; }
+
+  .instructions {
+    background: rgba(79, 195, 247, 0.06);
+    border: 1px solid rgba(79, 195, 247, 0.12);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .instructions code {
+    background: rgba(79,195,247,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body id="body">
+
+<div class="demo-panel" id="panel">
+
+  <h1 id="page-title">InfoCard Demo</h1>
+  <p class="subtitle">Hover over items to see the info card. Try moving to the card to click links.</p>
+
+  <div class="instructions">
+    The card tracks your cursor vertically (optical stability) and positions itself
+    on whichever side has the most room. Side-swaps, content changes, and show/hide
+    all have a 300ms delay so you can move to the card. Drag the header to reposition;
+    it auto-pins. Click 📌 to unpin and return to tracking mode.
+  </div>
+
+  <h2>Elements</h2>
+  <div class="item-grid">
+    <div class="item" data-tip="hydrogen">
+      <div class="item-name">Hydrogen</div>
+      <div class="item-desc">Atomic number 1</div>
+    </div>
+    <div class="item" data-tip="helium">
+      <div class="item-name">Helium</div>
+      <div class="item-desc">Atomic number 2</div>
+    </div>
+    <div class="item" data-tip="carbon">
+      <div class="item-name">Carbon</div>
+      <div class="item-desc">Atomic number 6</div>
+    </div>
+    <div class="item" data-tip="oxygen">
+      <div class="item-name">Oxygen</div>
+      <div class="item-desc">Atomic number 8</div>
+    </div>
+    <div class="item" data-tip="iron">
+      <div class="item-name">Iron</div>
+      <div class="item-desc">Atomic number 26</div>
+    </div>
+    <div class="item" data-tip="gold">
+      <div class="item-name">Gold</div>
+      <div class="item-desc">Atomic number 79</div>
+    </div>
+  </div>
+
+  <h2>Colours</h2>
+  <div class="swatch-row">
+    <div class="swatch" style="background:#e74c3c" data-color="Red — #e74c3c — Warm, energetic, urgent"></div>
+    <div class="swatch" style="background:#e67e22" data-color="Orange — #e67e22 — Friendly, confident"></div>
+    <div class="swatch" style="background:#f1c40f" data-color="Yellow — #f1c40f — Optimistic, cheerful"></div>
+    <div class="swatch" style="background:#2ecc71" data-color="Green — #2ecc71 — Growth, harmony"></div>
+    <div class="swatch" style="background:#3498db" data-color="Blue — #3498db — Trust, depth, stability"></div>
+    <div class="swatch" style="background:#9b59b6" data-color="Purple — #9b59b6 — Luxury, creativity"></div>
+    <div class="swatch" style="background:#1abc9c" data-color="Teal — #1abc9c — Calm, balanced"></div>
+    <div class="swatch" style="background:#e91e63" data-color="Pink — #e91e63 — Playful, romantic"></div>
+  </div>
+
+  <h2 id="inline-terms">Inline terms</h2>
+  <p style="line-height:1.8; font-size:14px;">
+    The <span class="word-target" data-term="closure">closure</span> captures
+    variables from its enclosing
+    <span class="word-target" data-term="scope">scope</span>, which is fundamental
+    to how <span class="word-target" data-term="callback">callbacks</span> work in
+    event-driven architectures. A
+    <span class="word-target" data-term="promise">promise</span> wraps an
+    asynchronous operation and lets you chain
+    <span class="word-target" data-term="thenables">thenables</span> for
+    sequential execution.
+  </p>
+
+  <div class="spacer"></div>
+  <p style="opacity:0.3; font-size:12px; text-align:center;">
+    ↑ Extra height so you can test vertical tracking at different scroll positions
+  </p>
+  <div class="spacer"></div>
+
+</div>
+
+<script type="module">
+
+import { InfoCard } from "../js/widgets/infocard.js"
+import { initMenu } from "../js/utilities/menu.js"
+
+let App = {};
+//-- A very short menu. Hamburger item appears top left. 
+App.menu = [
+      { label: 'Help', action: () => HelpOverlay.showHelp( App.helpConfig ) },
+    ];
+initMenu( App.menu );
+
+//-- Some help text. 
+App.helpConfig = [
+  {
+    panelPosition: {
+      targetId : 'body', 
+      x: 0.01,
+      y: 0.01,
+    },
+    items: [
+      {
+        text: '<strong>Menu:</strong><br>Good. You found the menu and its help link. Apps that do more will have more actions in the menu.',
+        targetId: 'nav-utility-btn',
+        type: 'default'
+      },
+      {
+        text: '<strong>InfoCard Demo:</strong><br>This app is to demo what InfoCards do.<br><br> InfoCards are rich tooltips which stay out of the way. The rationale is that when tooltips stay out of the way, they don\'t obscure the area you are looking at, and so they can be larger and have more information in them.<br><br>The design for how they stay out of the way means that generally the InfoCards move smoothly, whereas normal tooltips flick in and out as you pass over them. This \'optical stability\' makes the tooltips less distracting and the interface more restful.',
+        targetId: 'none',
+        type: 'results'
+      },  
+    ],
+  },  
+  {
+    panelPosition: {
+      targetId : 'body', 
+      x: 0.01,
+      y: 0.01,
+    },
+    items: [
+      {
+        text: '<strong>InfoCards:</strong><br>Close this help, and then hover over different items, and you will get an info card about them.<br><br>You can drag the info card to where you want it to be, rather than have it move around. Unpin it using the icon in top right of the card to have it move again.<br><br>You can also resize the InfoCard by dragging its bottom right corner.',
+        targetId: 'none',
+        type: 'results'
+      },  
+      {
+        text: '<strong>Indicators:</strong><br>The info cards for the inline terms have hyperlinks in them, links to Wikipedia. You can move the mouse into the cards, but you need to move reasonably quickly or the card will have moved out of your way, and then click on the link.<br><br>Close help to try out the InfoCards',
+        targetId: 'inline-terms',
+        type: 'default'
+      },
+    ]
+  },
+]; 
+
+
+// ── Tooltip data ─────────────────────────────────────────
+const ELEMENTS = {
+  hydrogen: `
+    <h3>Hydrogen (H)</h3>
+    <p>The lightest and most abundant element in the universe,
+    making up roughly 75% of all normal matter by mass.</p>
+    <p><b>Atomic mass:</b> 1.008 u<br>
+    <b>Melting point:</b> −259.16 °C<br>
+    <b>Boiling point:</b> −252.87 °C</p>
+    <p><a href="https://en.wikipedia.org/wiki/Hydrogen" target="_blank">Wikipedia →</a></p>
+  `,
+  helium: `
+    <h3>Helium (He)</h3>
+    <p>A noble gas — colourless, odourless, inert. Second most
+    abundant element in the observable universe.</p>
+    <p><b>Atomic mass:</b> 4.0026 u<br>
+    <b>Melting point:</b> −272.20 °C (at 25 atm)<br>
+    <b>Boiling point:</b> −268.93 °C</p>
+    <p><a href="https://en.wikipedia.org/wiki/Helium" target="_blank">Wikipedia →</a></p>
+  `,
+  carbon: `
+    <h3>Carbon (C)</h3>
+    <p>The basis of organic chemistry. Forms more compounds than
+    any other element, with almost ten million described.</p>
+    <p><b>Atomic mass:</b> 12.011 u<br>
+    <b>Allotropes:</b> Diamond, graphite, graphene, fullerenes</p>
+    <p><a href="https://en.wikipedia.org/wiki/Carbon" target="_blank">Wikipedia →</a></p>
+  `,
+  oxygen: `
+    <h3>Oxygen (O)</h3>
+    <p>Essential for aerobic respiration. Makes up 21% of the
+    atmosphere and 46% of the Earth's crust by mass.</p>
+    <p><b>Atomic mass:</b> 15.999 u<br>
+    <b>Melting point:</b> −218.79 °C<br>
+    <b>Boiling point:</b> −182.96 °C</p>
+    <p><a href="https://en.wikipedia.org/wiki/Oxygen" target="_blank">Wikipedia →</a></p>
+  `,
+  iron: `
+    <h3>Iron (Fe)</h3>
+    <p>The most common element on Earth by mass, forming much
+    of the outer and inner core. Crucial in steel production.</p>
+    <p><b>Atomic mass:</b> 55.845 u<br>
+    <b>Melting point:</b> 1,538 °C<br>
+    <b>Crystal structure:</b> BCC (α-iron)</p>
+    <p><a href="https://en.wikipedia.org/wiki/Iron" target="_blank">Wikipedia →</a></p>
+  `,
+  gold: `
+    <h3>Gold (Au)</h3>
+    <p>Dense, soft, malleable. Prized for millennia as currency,
+    jewellery, and a store of value.</p>
+    <p><b>Atomic mass:</b> 196.967 u<br>
+    <b>Melting point:</b> 1,064 °C<br>
+    <b>Density:</b> 19.3 g/cm³</p>
+    <p><a href="https://en.wikipedia.org/wiki/Gold" target="_blank">Wikipedia →</a></p>
+  `,
+};
+
+const TERMS = {
+  closure: `
+    <h3>Closure</h3>
+    <p>A function bundled with references to its surrounding lexical
+    environment. The closure "remembers" variables from the scope
+    in which it was created, even after that scope has exited.</p>
+    <p><code>const make = (x) => () => x;</code></p>
+  `,
+  scope: `
+    <h3>Scope</h3>
+    <p>The region of code where a variable binding is valid.
+    JavaScript has function scope (<code>var</code>) and block scope
+    (<code>let</code>, <code>const</code>).</p>
+  `,
+  callback: `
+    <h3>Callback</h3>
+    <p>A function passed as an argument to another function, to be
+    invoked later — typically when an asynchronous operation completes
+    or an event fires.</p>
+  `,
+  promise: `
+    <h3>Promise</h3>
+    <p>An object representing the eventual completion (or failure)
+    of an asynchronous operation. States: <b>pending</b>,
+    <b>fulfilled</b>, or <b>rejected</b>.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+          target="_blank">MDN docs →</a></p>
+  `,
+  thenables: `
+    <h3>Thenable</h3>
+    <p>Any object with a <code>.then()</code> method. Promises are
+    thenables, but you can also create custom thenables that
+    interoperate with <code>await</code> and <code>Promise.resolve()</code>.</p>
+  `,
+};
+
+// ── Init InfoCard ────────────────────────────────────────
+
+InfoCard.init({
+  anchor: '#panel',
+  width: 300,
+  height: 320,
+
+  content(el, x, y) {
+    if (!el) return '';
+
+    // Walk up to find a data attribute
+    let node = el;
+    for (let i = 0; i < 6 && node && node !== document.body; i++) {
+      // Element cards
+      if (node.dataset && node.dataset.tip && ELEMENTS[node.dataset.tip]) {
+        return ELEMENTS[node.dataset.tip];
+      }
+      // Colour swatches
+      if (node.dataset && node.dataset.color) {
+        const parts = node.dataset.color.split(' — ');
+        const bg = node.style.background || node.style.backgroundColor || '#888';
+        return `
+          <h3>${parts[0]}</h3>
+          <div style="width:100%;height:60px;border-radius:6px;background:${bg};margin:8px 0;"></div>
+          <p><b>Hex:</b> ${parts[1]}</p>
+          <p>${parts[2]}</p>
+        `;
+      }
+      // Inline terms
+      if (node.dataset && node.dataset.term && TERMS[node.dataset.term]) {
+        return TERMS[node.dataset.term];
+      }
+      node = node.parentElement;
+    }
+
+    return '';
+  }
+});
+
+</script>
+</body>
+</html>

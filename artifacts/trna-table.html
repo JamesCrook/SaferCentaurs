@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tRNA Codon Table</title>
+<link rel="icon" type="image/x-icon" href="../wheel.ico">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0e1117; --bg2: #161b22; --bg3: #1c2230;
+    --border: #2a3140; --text: #e0e4ea; --text2: #8b95a8; --text3: #5a6377;
+    --accent: #58a6ff;
+    --c1: #3fb950; --c2: #f77858;
+    --stop-bg: #21262d; --stop-text: #8b949e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  .app { max-width: 1340px; margin: 0 auto; padding: 28px 20px; }
+
+  header { margin-bottom: 22px; margin-left: 60px;}
+  header h1 { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; }
+  header h1 em { font-style: normal; color: var(--accent); }
+  header p { color: var(--text2); margin-top: 5px; font-size: 0.85rem; line-height: 1.5; }
+
+  /* Controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center; }
+  .btn-group { display: flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .btn {
+    padding: 7px 14px; font: 500 0.78rem 'DM Sans', sans-serif;
+    border: none; background: transparent; color: var(--text2); cursor: pointer; transition: all .2s;
+  }
+  .btn:not(:last-child) { border-right: 1px solid var(--border); }
+  .btn:hover { color: var(--text); background: var(--bg3); }
+  .btn.on { color: #fff; background: var(--accent); }
+  .btn.on-c1 { color: #fff; background: var(--c1); }
+  .search {
+    padding: 7px 12px; font: 0.78rem 'JetBrains Mono', monospace;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); outline: none; width: 140px; transition: border-color .2s;
+  }
+  .search:focus { border-color: var(--accent); }
+  .search::placeholder { color: var(--text3); }
+
+  /* Slider */
+  .slider-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px;
+  }
+  .slider-label { font: 500 0.72rem 'DM Sans', sans-serif; color: var(--text3); white-space: nowrap; }
+  .slider {
+    -webkit-appearance: none; appearance: none;
+    width: 90px; height: 4px; border-radius: 2px; background: var(--bg3); outline: none; cursor: pointer;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg); cursor: pointer;
+  }
+  .slider::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg); cursor: pointer;
+  }
+
+  /* Base checkboxes */
+  .base-checks {
+    display: flex; align-items: center; gap: 2px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px 4px;
+  }
+  .base-checks .lbl { font: 500 0.68rem 'DM Sans', sans-serif; color: var(--text3); padding: 0 6px; }
+  .base-chk { display: none; }
+  .base-chk-label {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 5px; cursor: pointer;
+    font: 700 0.82rem 'JetBrains Mono', monospace; color: var(--text3);
+    transition: all .15s; user-select: none;
+  }
+  .base-chk-label:hover { background: var(--bg3); color: var(--text); }
+  .base-chk:checked + .base-chk-label { color: var(--text); background: var(--bg3); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .grp-chk-wrap { padding: 3px 3px; }
+  .grp-chk-label {
+    width: auto !important; padding: 4px 10px !important;
+    font-size: 0.68rem !important; letter-spacing: .4px; text-transform: uppercase;
+  }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--bg2); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 0; text-align: center; border: 1px solid var(--border); }
+  th {
+    font: 700 0.9rem 'JetBrains Mono', monospace;
+    background: var(--bg3); color: var(--text); padding: 8px 8px;
+  }
+  th.sm { font-size: 0.58rem; font-weight: 500; color: var(--text3); background: var(--bg); padding: 3px 5px; letter-spacing: .4px; }
+
+  /* Codon cells */
+  td.cg { padding: 0; vertical-align: top; }
+  .cc {
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 5px; cursor: pointer; transition: background .15s, filter .15s; min-height: 28px; position: relative;
+  }
+  .cc:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .cc:hover { filter: brightness(1.15); }
+  .cc.dim { opacity: .12; }
+  .cc.hi { outline: 1.5px solid var(--accent); outline-offset: -1.5px; }
+
+  .cc .cod {
+    font: 600 .72rem 'JetBrains Mono', monospace; color: var(--text2);
+    width: 27px; flex-shrink: 0; letter-spacing: .2px; transition: color .2s;
+  }
+  .cc .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 700 .7rem 'JetBrains Mono', monospace;
+    border-radius: 3px; padding: 1px 4px; min-width: 22px; color: #111;
+    transition: opacity .2s;
+  }
+  .badge.stop { background: var(--stop-bg) !important; color: var(--stop-text) !important; border: 1px solid var(--border); }
+  .cc .aa-ltr {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    font: 700 .82rem 'JetBrains Mono', monospace;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .cc .nm {
+    font-size: .68rem; color: var(--text2); flex: 1; text-align: left;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity .2s;
+  }
+
+  /* Indicators with dark circular backing */
+  .mico {
+    flex-shrink: 0; width: 15px; height: 15px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .55rem; color: #f0c040;
+    background: transparent; transition: opacity .2s, background .2s;
+    opacity: 0;
+  }
+  .show-mito .mico.has { opacity: 1; background: #111; }
+
+  .cdot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    opacity: 0; transition: opacity .2s;
+    box-shadow: 0 0 0 1px #111;
+  }
+  .show-class .cdot { opacity: 1; }
+  .cdot.d1 { background: var(--c1); }
+  .cdot.d2 { background: var(--c2); }
+  .show-class .cc[data-cls="1"] { border-left: 2px solid var(--c1); }
+  .show-class .cc[data-cls="2"] { border-left: 2px solid var(--c2); }
+
+  /* Detail panel */
+  .dp { margin-top: 18px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; display: none; animation: fi .2s; }
+  .dp.vis { display: block; }
+  @keyframes fi { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:translateY(0) } }
+  .dp-hdr { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .dp-badge { font: 700 1.5rem 'JetBrains Mono', monospace; border-radius: 8px; padding: 6px 16px; color: #111; }
+  .dp-title { font-size: 1.1rem; font-weight: 700; }
+  .dp-sub { font: .8rem 'JetBrains Mono', monospace; color: var(--text2); }
+  .dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 10px; }
+  .dp-card { background: var(--bg3); border-radius: 8px; padding: 11px 13px; }
+  .dp-lbl { font-size: .66rem; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); margin-bottom: 4px; font-weight: 600; }
+  .dp-val { font-size: .85rem; line-height: 1.5; color: var(--text); }
+  .tag { display: inline-block; font: .72rem 'JetBrains Mono', monospace; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; margin: 2px; }
+
+  /* Legend */
+  .legend { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .lg-label { font-size: .66rem; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; padding: 4px 5px; align-self: center; font-weight: 600; }
+  .lg-item {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+    font: 600 .72rem 'JetBrains Mono', monospace; color: var(--text2); cursor: pointer; transition: all .15s;
+  }
+  .lg-item:hover { border-color: var(--text3); color: var(--text); }
+  .lg-item.on { border-color: var(--accent); color: var(--text); background: var(--bg3); }
+  .lg-sw { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+
+  .class-legend { display: none; gap: 14px; align-items: center; font-size: .82rem; flex-wrap: wrap; margin-top: 10px; }
+  .cl-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+  @media (max-width: 700px) {
+    .app { padding: 14px 8px; }
+    header h1 { font-size: 1.15rem; }
+    .dp-grid { grid-template-columns: 1fr; }
+    .slider { width: 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1><em>&lt;</em>tRNA<em>&gt;</em> Codon Table</h1>
+    <p>The standard genetic code &mdash; 64 codons, 20 amino acids, 3 stop signals. Click any codon for details.</p>
+  </header>
+
+  <div class="controls">
+    <div class="btn-group" id="views">
+      <button class="btn on" data-v="std" id="stdBtn">Standard</button>
+      <button class="btn" data-v="class" id="snthBtn">Synthetase Class</button>
+      <button class="btn" data-v="mito" id="mitoBtn">Mitochondrial</button>
+    </div>
+    <div class="slider-wrap">
+      <span class="slider-label">Fill</span>
+      <input class="slider" id="fill" type="range" min="0" max="100" value="0">
+    </div>
+    <div class="base-checks" id="basechk">
+      <span class="lbl">Bases</span>
+      <input class="base-chk" type="checkbox" id="chk-U" value="U" checked><label class="base-chk-label" for="chk-U">U</label>
+      <input class="base-chk" type="checkbox" id="chk-C" value="C" checked><label class="base-chk-label" for="chk-C">C</label>
+      <input class="base-chk" type="checkbox" id="chk-A" value="A" checked><label class="base-chk-label" for="chk-A">A</label>
+      <input class="base-chk" type="checkbox" id="chk-G" value="G" checked><label class="base-chk-label" for="chk-G">G</label>
+    </div>
+    <input class="search" id="q" type="text" placeholder="Search...">
+  </div>
+
+  <div class="table-wrap" id="tw"><table id="tbl"></table></div>
+
+  <div class="class-legend" id="clleg">
+    <span><span class="cl-dot" style="background:var(--c1)"></span> Class I &mdash; monomeric, 2&prime;-OH, Rossmann fold</span>
+    <span><span class="cl-dot" style="background:var(--c2)"></span> Class II &mdash; dimeric, 3&prime;-OH, &beta;-sheet fold</span>
+  </div>
+
+  <div class="dp" id="dp"></div>
+  <div class="legend" id="leg"></div>
+</div>
+
+<script type="module">
+
+import { InfoCard } from "../js/widgets/infocard.js"
+import { initMenu } from "../js/utilities/menu.js"
+
+let App = {};
+//-- A very short menu. Hamburger item appears top left. 
+App.menu = [
+      { label: 'Help', action: () => HelpOverlay.showHelp( App.helpConfig ) },
+    ];
+initMenu( App.menu );
+
+//-- Some help text. 
+App.helpConfig = [
+  {
+    panelPosition: {
+      targetId : 'body', 
+      x: 0.01,
+      y: 0.3,
+    },
+    items: [
+      {
+        text: '<strong>Mitochondrial:</strong><br>In the mitocohondrial code, the third position is less discriminating.',
+        targetId: 'mitoBtn',
+        type: 'default'
+      },  
+      {
+        text: '<strong>Synthetase Class:</strong><br>tRNAs are loaded by two different synthetases.',
+        targetId: 'snthBtn',
+        type: 'default'
+      },  
+      {
+        text: '<strong>Standard:</strong><br>The standard genetic code.',
+        targetId: 'stdBtn',
+        type: 'default'
+      },  
+      {
+        text: '<strong>Bases:</strong><br>Uncheck a base to see the code without it',
+        targetId: 'basechk',
+        type: 'default'
+      },
+      {
+        text: '<strong>Codons:</strong><br>Click on a codon for more details about it.',
+        targetId: 'tbl',
+        type: 'default'
+      },        
+      {
+        text: '<strong>Amino Acid Colouring:</strong><br>Choose NONPOLAR, POLAR, CHARGED to see only amino acid residues with those proerties coloured.',
+        targetId: 'leg',
+        type: 'default'
+      },
+    ],
+  }
+]; 
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const COL = {
+  G:'#C9B3D0',A:'#9CABC7',S:'#FF9419',T:'#FFB762',
+  D:'#D73F31',E:'#FF534A',Q:'#C58846',N:'#A1682A',
+  V:'#228B22',L:'#18C61A',I:'#53D785',
+  K:'#3A93FF',R:'#22BBFF',M:'#BAEE60',C:'#EEEE00',
+  F:'#FF96CB',Y:'#D285E4',W:'#A556D3',H:'#7461DB',
+  P:'#DFAFFB','*':'#21262d'
+};
+const FULL = {
+  G:'Glycine',A:'Alanine',S:'Serine',T:'Threonine',D:'Aspartate',E:'Glutamate',
+  Q:'Glutamine',N:'Asparagine',V:'Valine',L:'Leucine',I:'Isoleucine',
+  K:'Lysine',R:'Arginine',M:'Methionine',C:'Cysteine',
+  F:'Phenylalanine',Y:'Tyrosine',W:'Tryptophan',H:'Histidine',P:'Proline','*':'Stop'
+};
+const TH = {
+  G:'Gly',A:'Ala',S:'Ser',T:'Thr',D:'Asp',E:'Glu',Q:'Gln',N:'Asn',
+  V:'Val',L:'Leu',I:'Ile',K:'Lys',R:'Arg',M:'Met',C:'Cys',
+  F:'Phe',Y:'Tyr',W:'Trp',H:'His',P:'Pro','*':'***'
+};
+const CLS = {
+  R:1,C:1,E:1,Q:1,I:1,L:1,M:1,W:1,Y:1,V:1,
+  A:2,N:2,D:2,G:2,H:2,K:2,F:2,P:2,S:2,T:2
+};
+const SUB = {
+  C:'Ia',M:'Ia',V:'Ia',I:'Ia',L:'Ia',R:'Ia',
+  E:'Ib',Q:'Ib',Y:'Ic',W:'Ic',
+  S:'IIa',T:'IIa',G:'IIa',P:'IIa',A:'IIa',H:'IIa',
+  K:'IIb',N:'IIb',D:'IIb',F:'IIc'
+};
+const CLS_DESC = {
+  1:'Monomeric; aminoacylates 2\u2032-OH; Rossmann fold catalytic domain',
+  2:'Dimeric/tetrameric; aminoacylates 3\u2032-OH; antiparallel \u03B2-sheet catalytic domain'
+};
+const ALL_BASES = ['U','C','A','G'];
+
+const CODE = {};
+['FFLLSSSSYY**CC*W','LLLLPPPPHHQQRRRR','IIIMTTTTNNKKSSRR','VVVVAAAADDEEGGGG']
+  .forEach((row,i) => ALL_BASES.forEach((b2,j) => ALL_BASES.forEach((b3,k) => {
+    CODE[ALL_BASES[i]+b2+b3] = row[j*4+k];
+  })));
+
+const MITO = {
+  UGA:{aa:'W',note:'Trp instead of Stop'},
+  AGA:{aa:'*',note:'Stop instead of Arg'},
+  AGG:{aa:'*',note:'Stop instead of Arg'},
+  AUA:{aa:'M',note:'Met instead of Ile'}
+};
+const PROPS = {
+  G:{mw:57.05,pI:6.06,tp:'Nonpolar',ess:false},A:{mw:71.08,pI:6.01,tp:'Nonpolar',ess:false},
+  V:{mw:99.13,pI:5.97,tp:'Nonpolar',ess:true},L:{mw:113.16,pI:6.01,tp:'Nonpolar',ess:true},
+  I:{mw:113.16,pI:6.05,tp:'Nonpolar',ess:true},P:{mw:97.12,pI:6.30,tp:'Nonpolar',ess:false},
+  F:{mw:147.18,pI:5.49,tp:'Nonpolar',ess:true},W:{mw:186.21,pI:5.89,tp:'Nonpolar',ess:true},
+  M:{mw:131.20,pI:5.74,tp:'Nonpolar',ess:true},S:{mw:87.08,pI:5.68,tp:'Polar',ess:false},
+  T:{mw:101.10,pI:5.60,tp:'Polar',ess:true},C:{mw:103.14,pI:5.05,tp:'Polar',ess:false},
+  Y:{mw:163.18,pI:5.64,tp:'Polar',ess:false},N:{mw:114.10,pI:5.41,tp:'Polar',ess:false},
+  Q:{mw:128.13,pI:5.65,tp:'Polar',ess:false},D:{mw:115.09,pI:2.85,tp:'Neg. charged',ess:false},
+  E:{mw:129.12,pI:3.15,tp:'Neg. charged',ess:false},K:{mw:128.17,pI:9.60,tp:'Pos. charged',ess:true},
+  R:{mw:156.19,pI:10.76,tp:'Pos. charged',ess:false},H:{mw:137.14,pI:7.60,tp:'Pos. charged',ess:true}
+};
+const NOTES = {
+  M:'Initiator tRNA: fMet in prokaryotes, Met-i in eukaryotes. AUG is the universal start codon.',
+  W:'Single-codon amino acid (along with Met). UGA is reassigned to Trp in mitochondria.',
+  S:'Has two distinct tRNA isoacceptor families; six-fold degenerate.',
+  I:'AUA reassigned to Met in vertebrate mitochondria.',
+  L:'Six-fold degenerate \u2014 largest codon family, split across two boxes.',
+  R:'AGA/AGG reassigned to Stop in vertebrate mitochondria.',
+  '*':'UAG = \u201Camber\u201D, UAA = \u201Cochre\u201D, UGA = \u201Copal\u201D. Suppressor tRNAs can read through these.'
+};
+const MOD_BASES = [
+  ['Inosine (I)','Wobble base at anticodon pos 34; pairs with U, C, A'],
+  ['Pseudouridine (\u03A8)','Most abundant modification; stabilises stacking'],
+  ['Dihydrouridine (D)','Found in D-loop; increases local flexibility'],
+  ['Queuosine (Q)','Replaces G34 in Tyr, His, Asp, Asn tRNA anticodons'],
+  ['t\u2076A (pos 37)','Ensures codon\u2013anticodon fidelity; prevents frameshifting'],
+  ['m\u00B9A58','Stabilises the elbow region of the L-shaped tRNA']
+];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const COMP = {U:'A',A:'U',C:'G',G:'C'};
+const acod = c => c.split('').reverse().map(b=>COMP[b]).join('');
+const codsFor = aa => Object.keys(CODE).filter(k=>CODE[k]===aa);
+const $ = id => document.getElementById(id);
+const tag = (t,bg) => `<span class="tag"${bg?' style="background:'+bg+';color:#111;border-color:transparent"':''}>${t}</span>`;
+const card = (lbl,val,wide) => `<div class="dp-card"${wide?' style="grid-column:1/-1"':''}><div class="dp-lbl">${lbl}</div><div class="dp-val">${val}</div></div>`;
+
+const RGB = {};
+for (const [aa, hex] of Object.entries(COL)) {
+  const n = parseInt(hex.slice(1), 16);
+  RGB[aa] = [(n>>16)&255, (n>>8)&255, n&255];
+}
+function isDark(r,g,b) {
+  return (r*0.299 + g*0.587 + b*0.114) < 140;
+}
+
+// AA group membership
+const GRP = {};
+[['Nonpolar','G A V L I P F W M'],['Polar','S T C Y N Q'],['Charged','D E K R H']]
+  .forEach(([g,s]) => s.split(' ').forEach(aa => GRP[aa]=g));
+
+const GREY = [102,102,102]; // neutral grey for muted groups
+
+function aaRGB(aa) {
+  if (aa==='*') return RGB[aa];
+  const g = GRP[aa];
+  if (g && !$('grp-'+g).checked) return GREY;
+  return RGB[aa];
+}
+
+// Current view mode
+let curView = 'std';
+const eAA = cod => (curView==='mito' && MITO[cod]) ? MITO[cod].aa : CODE[cod];
+const eCodsFor = aa => Object.keys(CODE).filter(k => eAA(k)===aa);
+
+// ── ACTIVE BASES ──────────────────────────────────────────────────────────────
+function getActiveBases() {
+  return ALL_BASES.filter(b => $('chk-'+b).checked);
+}
+
+// ── BUILD TABLE ───────────────────────────────────────────────────────────────
+function render() {
+  const bases = getActiveBases();
+  const n = bases.length;
+  if (!n) { $('tbl').innerHTML = '<tr><td style="padding:30px;color:var(--text3)">Select at least one base</td></tr>'; return; }
+
+  let h = '<thead><tr><th class="sm">1st</th>';
+  bases.forEach(b => h += `<th>${b}</th>`);
+  h += '<th class="sm">3rd</th></tr></thead><tbody>';
+
+  bases.forEach(b1 => {
+    bases.forEach((b3,j) => {
+      h += '<tr>';
+      if (!j) h += `<th rowspan="${n}">${b1}</th>`;
+      bases.forEach(b2 => {
+        const cod=b1+b2+b3, aa=eAA(cod), cl=CLS[aa]||0, stop=aa==='*', mi=!!MITO[cod];
+        h += `<td class="cg"><div class="cc" data-c="${cod}" data-a="${aa}" data-cls="${cl}">`
+          + `<span class="cod">${cod}</span>`
+          + `<span class="badge${stop?' stop':''}" style="${stop?'':'background:'+COL[aa]}">${stop?'\u25A0':aa}</span>`
+          + `<span class="aa-ltr">${stop?'\u25A0':aa}</span>`
+          + `<span class="nm">${stop?'Stop':TH[aa]}</span>`
+          + `<span class="mico${mi?' has':''}">${mi?'\u26A1':''}</span>`
+          + `<span class="cdot${cl===1?' d1':cl===2?' d2':''}"></span>`
+          + '</div></td>';
+      });
+      h += `<th>${b3}</th></tr>`;
+    });
+  });
+  h += '</tbody>';
+  $('tbl').innerHTML = h;
+  applyFill(+$('fill').value);
+}
+
+// Event delegation for cell clicks (survives re-renders)
+$('tw').addEventListener('click', e => {
+  const cc = e.target.closest('.cc');
+  if (cc) showDetail(cc.dataset.c);
+});
+
+// ── FILL CROSSFADE ────────────────────────────────────────────────────────────
+function applyFill(v) {
+  const f = v / 100;
+  document.querySelectorAll('.cc').forEach(el => {
+    const aa = el.dataset.a, stop = aa==='*';
+    const [r,g,b] = aaRGB(aa);
+    const dark = isDark(r,g,b);
+
+    // Cell fill
+    el.style.background = stop ? `rgba(33,38,45,${f*0.5})` : `rgba(${r},${g},${b},${f})`;
+
+    // Badge: update color (may be greyed) and fade with fill
+    const badge = el.querySelector('.badge');
+    if (!stop) badge.style.background = `rgb(${r},${g},${b})`;
+    badge.style.opacity = 1 - f;
+
+    // Floating AA letter
+    const ltr = el.querySelector('.aa-ltr');
+    ltr.style.opacity = f;
+    ltr.style.color = (stop || dark) ? '#eee' : '#111';
+
+    // Codon text contrast
+    const cod = el.querySelector('.cod');
+    cod.style.color = (!stop && f > 0.5) ? (dark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.6)') : '';
+
+    // Three-letter name fade
+    el.querySelector('.nm').style.opacity = Math.max(0, 1 - f * 1.5);
+  });
+}
+$('fill').addEventListener('input', e => applyFill(+e.target.value));
+
+// ── BASE CHECKBOXES ───────────────────────────────────────────────────────────
+$('basechk').addEventListener('change', () => {
+  $('dp').classList.remove('vis');
+  render();
+});
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+function showDetail(cod) {
+  const aa=eAA(cod), stdAA=CODE[cod], stop=aa==='*', mi=MITO[cod],
+        cl=CLS[aa], sb=SUB[aa], pr=PROPS[aa],
+        nt=NOTES[aa], cods=eCodsFor(aa);
+  const isMitoReassigned = curView==='mito' && mi;
+
+  let h = `<div class="dp-hdr">`
+    + `<span class="dp-badge" style="background:${COL[aa]};${stop?'color:var(--stop-text);border:1px solid var(--border)':''}">${stop?'STOP':aa}</span>`
+    + `<div><div class="dp-title">${FULL[aa]}</div>`
+    + `<div class="dp-sub">${stop?cod:TH[aa]+' \u2014 '+cod+' (anticodon: '+acod(cod)+')'}</div></div></div>`
+    + '<div class="dp-grid">';
+
+  // Codons in current code
+  const codeLabel = curView==='mito' ? 'Mito codons' : 'Codons';
+  h += card(codeLabel+' ('+cods.length+')', cods.map(c=>tag(c)).join(''));
+
+  // If mito-reassigned, show standard code difference
+  if (isMitoReassigned) {
+    h += card('\u26A1 Mitochondrial reassignment',
+      `Standard code: ${tag(stdAA==='*'?'Stop':stdAA, COL[stdAA])} ${FULL[stdAA]}<br>`
+      + `<span style="font-size:.75rem;color:var(--text2)">${mi.note}</span>`);
+  }
+
+  if (cl) {
+    h += card('Aminoacyl-tRNA Synthetase',
+      `<span style="color:${cl===1?'var(--c1)':'var(--c2)'};font-weight:700">Class ${cl===1?'I':'II'}</span> \u2014 subclass ${sb}<br>`
+      + `<span style="font-size:.75rem;color:var(--text2)">${CLS_DESC[cl]}</span>`);
+  }
+
+  if (pr) {
+    h += card('Properties',
+      `MW: ${pr.mw} Da &middot; pI: ${pr.pI}<br>${pr.tp}`
+      + (pr.ess?' &middot; <span style="color:#f0c040">Essential</span>':' &middot; Non-essential'));
+  }
+
+  // Show mito card in non-mito view if there's a difference
+  if (!isMitoReassigned && mi) {
+    h += `<div class="dp-card" style="border:1px solid #f0c04044"><div class="dp-lbl">\u26A1 Vertebrate mitochondrial</div><div class="dp-val">`
+      + `${mi.note}<br>Mito: ${tag(mi.aa==='*'?'Stop':mi.aa, COL[mi.aa])}</div></div>`;
+  }
+
+  h += card('Anticodon & Wobble',
+    `Anticodon: ${tag(acod(cod))} (3\u2032\u21925\u2032)<br>`
+    + `<span style="font-size:.75rem;color:var(--text2)">Wobble pos (anticodon base 1): G\u00B7U and I\u00B7U/C/A pairing allowed</span>`);
+
+  if (nt) h += card('Notes', `<span style="font-size:.82rem">${nt}</span>`);
+
+  h += card('Common tRNA base modifications',
+    MOD_BASES.map(([k,v]) => tag(k)+' '+v).join('<br>'), true);
+
+  h += '</div>';
+  const dp = $('dp');
+  dp.innerHTML = h;
+  dp.classList.add('vis');
+  highlight(aa);
+}
+
+function highlight(aa) {
+  document.querySelectorAll('.cc').forEach(el => {
+    el.classList.toggle('hi', el.dataset.a===aa);
+    el.classList.remove('dim');
+  });
+}
+
+// ── VIEW TOGGLES ──────────────────────────────────────────────────────────────
+$('views').addEventListener('click', e => {
+  const b = e.target.closest('.btn');
+  if (!b) return;
+  const v = b.dataset.v, tw = $('tw'), cl = $('clleg');
+  const wasMito = curView==='mito', nowMito = v==='mito';
+  curView = v;
+  document.querySelectorAll('#views .btn').forEach(x => x.className='btn');
+  b.classList.add(v==='class'?'on-c1':'on');
+  tw.classList.toggle('show-class', v==='class');
+  tw.classList.toggle('show-mito', v==='mito');
+  cl.style.display = v==='class' ? 'flex' : 'none';
+  // Re-render if switching to/from mito (cell contents change)
+  if (wasMito !== nowMito) {
+    $('dp').classList.remove('vis');
+    render();
+  }
+});
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+$('q').addEventListener('input', e => {
+  const q = e.target.value.trim().toUpperCase();
+  document.querySelectorAll('.cc').forEach(el => {
+    if (!q) { el.classList.remove('dim','hi'); return; }
+    const c=el.dataset.c, a=el.dataset.a;
+    const hit = c.includes(q)||a===q||(FULL[a]||'').toUpperCase().includes(q)||(TH[a]||'').toUpperCase().includes(q);
+    el.classList.toggle('dim', !hit);
+    el.classList.toggle('hi', hit);
+  });
+});
+
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+function legend() {
+  const grp = [
+    ['Nonpolar',['G','A','V','L','I','P','F','W','M']],
+    ['Polar',['S','T','C','Y','N','Q']],
+    ['Charged',['D','E','K','R','H']],
+    ['',['*']]
+  ];
+  let h = '';
+  grp.forEach(([lbl,aas]) => {
+    if (lbl) {
+      const id = 'grp-'+lbl;
+      h += `<span class="base-checks grp-chk-wrap">`
+        + `<input class="base-chk grp-chk" type="checkbox" id="${id}" value="${lbl}" checked>`
+        + `<label class="base-chk-label grp-chk-label" for="${id}">${lbl}</label>`
+        + `</span>`;
+    }
+    aas.forEach(aa => {
+      const s=aa==='*';
+      h += `<span class="lg-item" data-a="${aa}"><span class="lg-sw" style="background:${COL[aa]};${s?'border:1px solid var(--border)':''}"></span>${s?'Stop':aa+' '+TH[aa]}</span>`;
+    });
+  });
+  const leg = $('leg');
+  leg.innerHTML = h;
+
+  // Group checkbox changes
+  leg.addEventListener('change', e => {
+    if (e.target.classList.contains('grp-chk')) {
+      applyFill(+$('fill').value);
+      // Update legend swatches
+      leg.querySelectorAll('.lg-item').forEach(it => {
+        const aa = it.dataset.a;
+        if (aa==='*') return;
+        const [r,g,b] = aaRGB(aa);
+        it.querySelector('.lg-sw').style.background = `rgb(${r},${g},${b})`;
+      });
+    }
+  });
+
+  // AA item clicks
+  leg.addEventListener('click', e => {
+    const it = e.target.closest('.lg-item');
+    if (!it) return;
+    document.querySelectorAll('.lg-item').forEach(x => x.classList.toggle('on', x===it && !x.classList.contains('on')));
+    const first = codsFor(it.dataset.a)[0];
+    if (first) showDetail(first);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+legend();  // must come first: render→applyFill→aaRGB reads group checkboxes
+render();
+</script>
+</body>
+</html>

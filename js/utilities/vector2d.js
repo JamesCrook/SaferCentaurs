@@ -203,4 +203,32 @@ class Vector2D {
     return this.scale(1 / len);
   }
 
+  mid(other) {
+    return new Vector2D(
+      (this.x + other.x) * 0.5,
+      (this.y + other.y) * 0.5
+    );
+  }
+  addPolar(r, theta) {
+    return new Vector2D(
+      this.x + r * Math.cos(theta),
+      this.y + r * Math.sin(theta)
+    );
+  }
+  /** 
+   * Adjusts for the coordinate system used in warped-polygon.js
+   */
+  get visualAngle() {
+    const theta = Math.atan2(this.x, -this.y);
+    return (((theta + Math.PI * 16) / (Math.PI * 2)) % 1) * Math.PI * 2;
+  }
+  
 }
+
+
+const lerp = (a, b, t) => a + (b - a) * t;
+
+
+window.Vector2D = Vector2D;
+window.lerp = lerp;
+

@@ -42,6 +42,30 @@ Styled divs, presented as a primitive Anki-card app
 
 ----
 
+## InfoCards
+
+Tooltips that get out of the way. These are larger than normal tooltips.
+
+----
+
+## Menu
+
+A hamburger-menu system. Menu is in the top left corner
+
+----
+
+## Codon Chart (trna-table)
+
+A custom chart that shows how codons decode to amino acids 
+
+----
+
+## Hertzsprung-Russell Diagram
+
+A classic star chart showing main sequence stars.
+
+----
+
 ## AsciiTree 
 
 A tree data display, mainly for documentation. Drop a file tree into the drop zone, and you get text which you can paste into a document as ASCII art. The copy button is at the end of the control panel.

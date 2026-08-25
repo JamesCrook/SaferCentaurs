@@ -105,6 +105,8 @@ let App = {};
 //-- A very short menu. Hamburger item appears top left. 
 App.menu = [
       { label: 'Help', action: () => HelpOverlay.showHelp( App.helpConfig ) },
+      { type: 'divider' },
+      { label: 'Home', href: "//catalase.com/" },
     ];
 initMenu( App.menu );
 
